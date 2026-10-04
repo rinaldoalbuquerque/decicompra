@@ -8,9 +8,11 @@ import { fileURLToPath } from 'url'
 
 import { Media } from './collections/Media'
 import { Users } from './collections/Users'
+import { readEnv } from './lib/env'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const env = readEnv()
 
 export default buildConfig({
   admin: {
@@ -22,10 +24,10 @@ export default buildConfig({
   editor: lexicalEditor(),
   graphQL: { disable: true },
   i18n: { fallbackLanguage: 'pt', supportedLanguages: { pt } },
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: env.payloadSecret,
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URL || '' },
+    pool: { connectionString: env.databaseUrl },
     push: false,
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
