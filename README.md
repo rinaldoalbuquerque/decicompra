@@ -25,3 +25,18 @@ Faça o commit da migração junto com a mudança.
 - `pnpm test:unit`: unitários e de componentes
 - `pnpm test:int`: integração (usa `TEST_DATABASE_URL`)
 - `pnpm test:e2e`: navegador (Playwright)
+
+## Categorias iniciais
+
+```bash
+pnpm seed:taxonomia
+```
+Cria as 5 categorias e as subcategorias da spec (com os pesos das âncoras). Pode rodar de novo sem duplicar.
+
+## Rodar um comando em outro ambiente
+
+```bash
+node scripts/with-env.mjs .env.producao.local pnpm payload migrate:status
+```
+Mostra o banco de destino antes de rodar. Use com cuidado: em produção, os comandos gravam dados reais.
+Nunca chame o arquivo de produção de `.env.production.local`: o Next carregaria esse arquivo sozinho no `next start`.

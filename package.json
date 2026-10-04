@@ -14,6 +14,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "seed:taxonomia": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed-taxonomy.ts",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "typecheck": "tsc --noEmit",
     "test": "pnpm test:unit && pnpm test:int && pnpm test:e2e",
