@@ -11,7 +11,7 @@ import { ProductCard } from './ProductCard'
 import { ProductImage } from './ProductImage'
 import { StoreButtons } from './StoreButtons'
 
-type SummaryWithProduct = ProductSummary & { product: { id: number; specs?: SpecRow[] | null } }
+type SummaryWithProduct = ProductSummary & { product: { id: number; specs?: SpecRow[] | null }; specRows?: SpecRow[] }
 type Fields = Record<string, unknown>
 type BlockArgs = { node: { fields: Fields } }
 
@@ -27,7 +27,7 @@ function ComparisonTable({ ids, attributes, products, template }: { ids: number[
   const winners = new Map(
     specWinners(
       rows,
-      columns.map((column) => ({ productId: column.id, rows: column.product.specs ?? [] })),
+      columns.map((column) => ({ productId: column.id, rows: column.specRows ?? column.product.specs ?? [] })),
       [],
     ).map((winner) => [winner.key, winner.winnerIds]),
   )
@@ -55,7 +55,7 @@ function ComparisonTable({ ids, attributes, products, template }: { ids: number[
                 {attr.unit ? `${attr.label} (${attr.unit})` : attr.label}
               </th>
               {columns.map((column) => {
-                const value = column.product.specs?.find((row) => row.key === attr.key)?.value ?? '—'
+                const value = (column.specRows ?? column.product.specs ?? []).find((row) => row.key === attr.key)?.value ?? '—'
                 const isWinner = winners.get(attr.key)?.includes(column.id) ?? false
                 return (
                   <td key={column.id} data-winner={isWinner ? 'true' : undefined} className={`p-2 ${isWinner ? 'bg-green-50 font-semibold text-verde-texto' : ''}`}>

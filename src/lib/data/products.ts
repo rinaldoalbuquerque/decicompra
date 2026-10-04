@@ -1,5 +1,5 @@
 import type { Criterion } from '@/catalog/score'
-import type { SpecAttribute } from '@/catalog/spec-template'
+import type { SpecAttribute, SpecRow } from '@/catalog/spec-template'
 import { toProductSummary, variantOffers, type OfferDoc, type ProductSummary, type VariantOffers } from '@/content/view-models'
 import type { Category, Product, Variant } from '@/payload-types'
 
@@ -16,6 +16,9 @@ export type ProductPage = {
 }
 
 const PUBLIC = { overrideAccess: false } as const
+
+// Resumo + documento + especificações (produto e variante de referência) para tabelas
+export type SummaryEntry = ProductSummary & { product: Product; specRows: SpecRow[] }
 
 // Página de produto: só produtos fora de rascunho (o acesso público já filtra)
 export async function getPublicProduct(slug: string, now = new Date()): Promise<ProductPage | null> {
@@ -67,8 +70,8 @@ export async function getSimilarProducts(subcategoryId: number, excludeId: numbe
 }
 
 // Resumos (card, botão, tabela) de vários produtos numa consulta; rascunhos ficam de fora
-export async function getProductSummaries(ids: number[], now = new Date()): Promise<Map<number, ProductSummary & { product: Product }>> {
-  const result = new Map<number, ProductSummary & { product: Product }>()
+export async function getProductSummaries(ids: number[], now = new Date()): Promise<Map<number, SummaryEntry>> {
+  const result = new Map<number, SummaryEntry>()
   const unique = [...new Set(ids)]
   if (unique.length === 0) return result
   const payload = await getSitePayload()
@@ -80,7 +83,9 @@ export async function getProductSummaries(ids: number[], now = new Date()): Prom
   for (const product of products.docs) {
     if (product.status === 'rascunho') continue
     const ownVariants = variants.docs.filter((variant) => String(typeof variant.product === 'object' ? variant.product.id : variant.product) === String(product.id))
-    result.set(product.id, { ...toProductSummary(product, ownVariants, offers.docs as unknown as OfferDoc[], now), product })
+    const reference = ownVariants.find((variant) => variant.isReference) ?? ownVariants[0]
+    const specRows = [...((product.specs ?? []) as SpecRow[]), ...((reference?.specs ?? []) as SpecRow[])]
+    result.set(product.id, { ...toProductSummary(product, ownVariants, offers.docs as unknown as OfferDoc[], now), product, specRows })
   }
   return result
 }

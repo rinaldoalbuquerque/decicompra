@@ -3,7 +3,8 @@ import type { SpecAttribute, SpecRow } from '../catalog/spec-template'
 
 // URL canônica: slugs dos produtos em ordem alfabética (spec §3.2)
 export function comparisonSlug(productSlugs: string[]): string {
-  return [...productSlugs].sort((a, b) => a.localeCompare(b)).join('-vs-')
+  // Ordem por ponto de código: igual em qualquer servidor (o roteador gera o mesmo endereço)
+  return [...productSlugs].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).join('-vs-')
 }
 
 // Identifica o conjunto de produtos, para não haver dois comparativos iguais

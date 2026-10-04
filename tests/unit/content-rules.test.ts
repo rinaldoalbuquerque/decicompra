@@ -200,3 +200,18 @@ describe('removeProductFromContent', () => {
     ])
   })
 })
+
+describe('comparisonSlug com ordem por ponto de código', () => {
+  it('não depende das regras de idioma do servidor', () => {
+    const original = String.prototype.localeCompare
+    // Simula um servidor cuja ordenação por idioma é diferente (invertida)
+    String.prototype.localeCompare = function (this: string, other: string) {
+      return -original.call(this, other)
+    } as typeof original
+    try {
+      expect(comparisonSlug(['ab', 'a-c', 'b'])).toBe('a-c-vs-ab-vs-b')
+    } finally {
+      String.prototype.localeCompare = original
+    }
+  })
+})
