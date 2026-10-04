@@ -1,5 +1,36 @@
+# dependências
+/node_modules
+/.pnp
+.pnp.js
+
+# testes
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# ambiente (segredos)
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# uploads locais (quando o R2 não está configurado)
+/media
+
+# wireframes do brainstorming
 .superpowers/
-node_modules/
-.next/
-.env*
-!.env.example
+
+# sistema
+.DS_Store
+*.pem
+npm-debug.log*

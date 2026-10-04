@@ -1,0 +1,27 @@
+# DeciCompra
+
+Compare. Entenda. Decida. Portal de comparação, análise e recomendação de produtos.
+
+Especificação: `docs/superpowers/specs/2026-10-03-decicompra-design.md`
+
+## Rodar localmente
+
+1. `pnpm install`
+2. Copie `.env.example` para `.env` e preencha (veja os comentários no arquivo)
+3. `pnpm payload migrate`
+4. `pnpm dev`: site em http://localhost:3000 e painel em http://localhost:3000/admin
+
+## Mudou uma coleção do Payload?
+
+```bash
+pnpm generate:types
+pnpm payload migrate:create nome-da-mudanca
+pnpm payload migrate
+```
+Faça o commit da migração junto com a mudança.
+
+## Testes
+
+- `pnpm test:unit`: unitários e de componentes
+- `pnpm test:int`: integração (usa `TEST_DATABASE_URL`)
+- `pnpm test:e2e`: navegador (Playwright)
