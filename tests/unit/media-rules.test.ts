@@ -1,7 +1,7 @@
 import { APIError } from 'payload'
 import { describe, expect, it } from 'vitest'
 
-import { assertImageType, assertUploadSize, MAX_UPLOAD_BYTES, validateAlt } from '@/collections/media-rules'
+import { assertImageType, assertUploadSize, MAX_UPLOAD_BYTES, validateAlt, validateCredit } from '@/collections/media-rules'
 
 describe('assertUploadSize', () => {
   it('aceita arquivo no limite', () => {
@@ -64,5 +64,18 @@ describe('coleção Mídia', () => {
     const description = String(Media.admin?.description ?? '')
     expect(description).toContain('4 MB')
     expect(description).toContain('JPG, PNG, WebP ou AVIF')
+  })
+})
+
+describe('validateCredit', () => {
+  const call = (value: string | null | undefined) =>
+    (validateCredit as (v: typeof value) => true | string)(value)
+
+  it('aceita crédito preenchido', () => {
+    expect(call('Divulgação LG')).toBe(true)
+  })
+
+  it.each([undefined, null, '', '   '])('recusa %j', (value) => {
+    expect(call(value)).toBe('Informe o crédito ou a fonte da imagem.')
   })
 })

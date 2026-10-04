@@ -27,7 +27,7 @@ jobs:
 
     env:
       CI: 'true'
-      DATABASE_URL: postgres://decicompra:decicompra@localhost:5432/decicompra_test
+      DATABASE_URL: postgres://decicompra:decicompra@localhost:5432/decicompra_test?application_name=app
       TEST_DATABASE_URL: postgres://decicompra:decicompra@localhost:5432/decicompra_test
       PAYLOAD_SECRET: ci-segredo-somente-para-testes-0123456789abcdef
 

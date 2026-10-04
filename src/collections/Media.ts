@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { ALLOWED_IMAGE_TYPES, rejectInvalidUpload, validateAlt } from './media-rules'
+import { ALLOWED_IMAGE_TYPES, rejectInvalidUpload, validateAlt, validateCredit } from './media-rules'
 
 const webp = { format: 'webp' as const, options: { quality: 80 } }
 
@@ -27,6 +27,7 @@ export const Media: CollectionConfig = {
       label: 'Crédito / fonte',
       type: 'text',
       required: true,
+      validate: validateCredit,
       admin: { description: 'Ex.: "Divulgação LG". Use só imagens oficiais de imprensa ou com permissão.' },
     },
   ],

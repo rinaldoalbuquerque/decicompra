@@ -24,7 +24,10 @@ export const rejectInvalidUpload: CollectionBeforeOperationHook = ({ args, req }
   return args
 }
 
-export const validateAlt: TextFieldSingleValidation = (value) =>
-  typeof value === 'string' && value.trim().length > 0
-    ? true
-    : 'Descreva a imagem: o texto alternativo é obrigatório.'
+export function requiredText(message: string): TextFieldSingleValidation {
+  return (value) => (typeof value === 'string' && value.trim().length > 0 ? true : message)
+}
+
+export const validateAlt = requiredText('Descreva a imagem: o texto alternativo é obrigatório.')
+
+export const validateCredit = requiredText('Informe o crédito ou a fonte da imagem.')

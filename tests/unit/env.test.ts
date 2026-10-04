@@ -62,4 +62,8 @@ describe('readEnv', () => {
   it('aceita a Vercel quando o R2 está completo', () => {
     expect(readEnv({ ...base, ...r2, VERCEL: '1' }).r2?.bucket).toBe('decicompra-media-dev')
   })
+
+  it.each(['R2_PUBLIC_URL', 'R2_ENDPOINT'])('recusa %s sem https://', (key) => {
+    expect(() => readEnv({ ...base, ...r2, [key]: 'pub-123.r2.dev' })).toThrow(`${key} precisa ser uma URL https:// completa`)
+  })
 })

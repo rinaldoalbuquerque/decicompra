@@ -48,7 +48,20 @@ function readR2(source: EnvSource): R2Config | null {
   }
 
   const config = Object.fromEntries(values) as R2Config
+  for (const field of ['endpoint', 'publicUrl'] as const) {
+    if (!isHttpsUrl(config[field])) {
+      throw new Error(`${R2_KEYS[field]} precisa ser uma URL https:// completa (ex.: https://exemplo.com).`)
+    }
+  }
   return { ...config, publicUrl: config.publicUrl.replace(/\/+$/, '') }
+}
+
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 // Lê e valida a configuração do ambiente; falha cedo com mensagem clara
