@@ -3,6 +3,7 @@ import type { CollectionConfig, Condition } from 'payload'
 import { adminOrEditor, anyone } from '../access'
 import { slugField } from '../fields/slug'
 import { guardCategoryDelete, redirectCategorySlug, resyncSubcategoryProducts, validateCategory } from './categories/hooks'
+import { revalidateCategory } from './revalidation-hooks'
 
 const isSubcategory: Condition = (_data, siblingData) => Boolean(siblingData?.parent)
 
@@ -16,7 +17,7 @@ export const Categories: CollectionConfig = {
     description: 'Categorias (1º nível) e subcategorias (2º nível). Especificações e critérios de nota ficam nas subcategorias.',
   },
   access: { read: anyone, create: adminOrEditor, update: adminOrEditor, delete: adminOrEditor },
-  hooks: { beforeChange: [validateCategory], afterChange: [resyncSubcategoryProducts, redirectCategorySlug], beforeDelete: [guardCategoryDelete] },
+  hooks: { beforeChange: [validateCategory], afterChange: [resyncSubcategoryProducts, redirectCategorySlug, revalidateCategory], beforeDelete: [guardCategoryDelete] },
   fields: [
     { name: 'name', label: 'Nome', type: 'text', required: true },
     slugField('name'),

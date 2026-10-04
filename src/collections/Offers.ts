@@ -4,6 +4,7 @@ import { adminOrEditor, loggedInField, readOfPublishedProducts } from '../access
 import { relId } from '../lib/relations'
 import { httpsUrl } from '../lib/url'
 import { afterOfferChange, afterOfferDelete, prepareOffer } from './offers/hooks'
+import { revalidateProductOfDeletedDoc, revalidateProductOfDoc } from './revalidation-hooks'
 
 export const Offers: CollectionConfig = {
   slug: 'offers',
@@ -15,7 +16,11 @@ export const Offers: CollectionConfig = {
     description: 'Único lugar onde links e preços são editados. Os botões do site usam /ir/{id}.',
   },
   access: { read: readOfPublishedProducts, create: adminOrEditor, update: adminOrEditor, delete: adminOrEditor },
-  hooks: { beforeChange: [prepareOffer], afterChange: [afterOfferChange], afterDelete: [afterOfferDelete] },
+  hooks: {
+    beforeChange: [prepareOffer],
+    afterChange: [afterOfferChange, revalidateProductOfDoc],
+    afterDelete: [afterOfferDelete, revalidateProductOfDeletedDoc],
+  },
   fields: [
     { name: 'product', label: 'Produto', type: 'relationship', relationTo: 'products', required: true, index: true },
     {

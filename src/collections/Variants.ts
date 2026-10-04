@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOrEditor, loggedIn, readOfPublishedProducts, updateVariants } from '../access'
+import { revalidateProductOfDeletedDoc, revalidateProductOfDoc } from './revalidation-hooks'
 import {
   deleteVariantOffers,
   guardVariantDelete,
@@ -17,9 +18,9 @@ export const Variants: CollectionConfig = {
   access: { read: readOfPublishedProducts, create: loggedIn, update: updateVariants, delete: adminOrEditor },
   hooks: {
     beforeChange: [prepareVariant],
-    afterChange: [syncReference, refreshOfferTitles],
+    afterChange: [syncReference, refreshOfferTitles, revalidateProductOfDoc],
     beforeDelete: [guardVariantDelete, deleteVariantOffers],
-    afterDelete: [promoteReference],
+    afterDelete: [promoteReference, revalidateProductOfDeletedDoc],
   },
   fields: [
     {

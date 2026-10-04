@@ -4,13 +4,14 @@ import { adminOrEditor, anyone } from '../access'
 import { slugField } from '../fields/slug'
 import { httpsUrl } from '../lib/url'
 import { guardBrandDelete, redirectBrandSlug } from './brands/hooks'
+import { revalidateBrand } from './revalidation-hooks'
 
 export const Brands: CollectionConfig = {
   slug: 'brands',
   labels: { singular: 'Marca', plural: 'Marcas' },
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'slug'], group: 'Catálogo' },
   access: { read: anyone, create: adminOrEditor, update: adminOrEditor, delete: adminOrEditor },
-  hooks: { afterChange: [redirectBrandSlug], beforeDelete: [guardBrandDelete] },
+  hooks: { afterChange: [redirectBrandSlug, revalidateBrand], beforeDelete: [guardBrandDelete] },
   fields: [
     { name: 'name', label: 'Nome', type: 'text', required: true },
     slugField('name'),

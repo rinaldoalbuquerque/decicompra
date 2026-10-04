@@ -6,6 +6,7 @@ import { slugField } from '../fields/slug'
 import { httpsUrl } from '../lib/url'
 import { contentBlocks } from './contents/blocks'
 import { prepareContent, redirectContentSlug } from './contents/hooks'
+import { revalidateContent, revalidateDeletedContent } from './revalidation-hooks'
 
 const isType =
   (...types: string[]): Condition =>
@@ -32,7 +33,11 @@ export const Contents: CollectionConfig = {
   },
   versions: { maxPerDoc: 30 },
   access: { read: readPublicContents, create: loggedIn, update: updateContents, delete: adminOrEditor },
-  hooks: { beforeChange: [prepareContent], afterChange: [redirectContentSlug] },
+  hooks: {
+    beforeChange: [prepareContent],
+    afterChange: [redirectContentSlug, revalidateContent],
+    afterDelete: [revalidateDeletedContent],
+  },
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
     slugField('title'),

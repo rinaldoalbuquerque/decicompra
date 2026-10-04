@@ -5,6 +5,7 @@ import { slugField } from '../fields/slug'
 import { httpsUrl } from '../lib/url'
 import { validateScore } from './products/validate-score'
 import { afterProductChange, cascadeProductDelete, prepareProduct } from './products/hooks'
+import { revalidateDeletedProduct, revalidateProduct } from './revalidation-hooks'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -16,7 +17,12 @@ export const Products: CollectionConfig = {
   },
   versions: { maxPerDoc: 30 },
   access: { read: readPublishedProducts, create: loggedIn, update: updateProducts, delete: adminOrEditor },
-  hooks: { beforeChange: [prepareProduct], afterChange: [afterProductChange], beforeDelete: [cascadeProductDelete] },
+  hooks: {
+    beforeChange: [prepareProduct],
+    afterChange: [afterProductChange, revalidateProduct],
+    beforeDelete: [cascadeProductDelete],
+    afterDelete: [revalidateDeletedProduct],
+  },
   fields: [
     { name: 'name', label: 'Nome', type: 'text', required: true, admin: { description: 'ex.: LG C4' } },
     slugField('name'),
