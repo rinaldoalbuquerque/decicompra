@@ -49,6 +49,53 @@ export function extractProductIds(input: ExtractInput): number[] {
   return [...ids].sort((a, b) => a - b)
 }
 
+const isProduct = (value: unknown, productId: number) => String(relId(value)) === String(productId)
+
+// Blocos do texto: tira o produto; remove o bloco que dependia só dele
+function cleanRichText(node: unknown, productId: number): unknown {
+  if (Array.isArray(node)) {
+    return node
+      .map((item) => cleanRichText(item, productId))
+      .filter((item) => item !== REMOVED)
+  }
+  if (!node || typeof node !== 'object') return node
+  const record = { ...(node as Record<string, unknown>) }
+  if (record.type === 'block' && record.fields && typeof record.fields === 'object') {
+    const fields = { ...(record.fields as Record<string, unknown>) }
+    if ('product' in fields && isProduct(fields.product, productId)) return REMOVED
+    if (Array.isArray(fields.products)) {
+      fields.products = fields.products.filter((item) => !isProduct(item, productId))
+      if ((fields.products as unknown[]).length < 2) return REMOVED
+    }
+    record.fields = fields
+  }
+  for (const [key, value] of Object.entries(record)) {
+    if (value && typeof value === 'object') record[key] = cleanRichText(value, productId)
+  }
+  return record
+}
+
+const REMOVED = Symbol('removido')
+
+// Conteúdo sem as referências a um produto que será apagado (para continuar salvável)
+export function removeProductFromContent<T extends ExtractInput & { specOverrides?: { winner?: unknown }[] | null }>(
+  content: T,
+  productId: number,
+): T {
+  const without = <I extends { product?: unknown }>(list: I[] | null | undefined) =>
+    (list ?? []).filter((item) => !isProduct(item.product, productId))
+  return {
+    ...content,
+    body: content.body === undefined ? undefined : cleanRichText(content.body, productId),
+    picks: without(content.picks),
+    alsoConsidered: without(content.alsoConsidered),
+    badges: without(content.badges),
+    chooseIf: without(content.chooseIf),
+    comparedProducts: (content.comparedProducts ?? []).filter((item) => !isProduct(item, productId)),
+    specOverrides: (content.specOverrides ?? []).filter((item) => !isProduct(item.winner, productId)),
+  }
+}
+
 export function effectiveMetaDescription(meta?: string | null, summary?: string | null): string {
   return meta?.trim() || summary?.trim() || ''
 }

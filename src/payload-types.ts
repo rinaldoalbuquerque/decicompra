@@ -77,6 +77,7 @@ export interface Config {
     offers: Offer;
     redirects: Redirect;
     authors: Author;
+    contents: Content;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -99,6 +100,7 @@ export interface Config {
     offers: OffersSelect<false> | OffersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
+    contents: ContentsSelect<false> | ContentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -544,6 +546,130 @@ export interface Author {
   createdAt: string;
 }
 /**
+ * Melhores, Comparativos, Guias e Entenda. Análises de produto ficam no próprio Produto.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contents".
+ */
+export interface Content {
+  id: number;
+  title: string;
+  /**
+   * Gerado a partir do nome se ficar vazio. Só letras minúsculas, números e hífens.
+   */
+  slug?: string | null;
+  type: 'melhores' | 'comparativo' | 'guia' | 'entenda';
+  status: 'rascunho' | 'em_revisao' | 'publicado' | 'agendado';
+  /**
+   * Preenchida ao publicar. Para agendar, escolha uma data futura.
+   */
+  publishAt?: string | null;
+  reviewedAt?: string | null;
+  author?: (number | null) | Author;
+  /**
+   * Desativado na v1. Nunca permitido em Melhores ou Comparativo.
+   */
+  sponsored?: boolean | null;
+  /**
+   * Calculado ao salvar.
+   */
+  referencedProducts?: (number | Product)[] | null;
+  productSetKey?: string | null;
+  /**
+   * No comparativo, é definida pelos produtos.
+   */
+  primarySubcategory?: (number | null) | Category;
+  relatedSubcategories?: (number | Category)[] | null;
+  /**
+   * A resposta em poucas linhas, no topo da página.
+   */
+  summary?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  modelsAnalyzed?: number | null;
+  /**
+   * De 3 a 10 escolhas, por perfil (ex.: "Melhor custo-benefício").
+   */
+  picks?:
+    | {
+        product?: (number | null) | Product;
+        variant?: (number | null) | Variant;
+        profileLabel: string;
+        position?: number | null;
+        why?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  alsoConsidered?:
+    | {
+        product?: (number | null) | Product;
+        reason?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * 2 ou 3 produtos da mesma subcategoria. O endereço é gerado a partir deles.
+   */
+  comparedProducts?: (number | Product)[] | null;
+  badges?:
+    | {
+        product?: (number | null) | Product;
+        /**
+         * ex.: Vencedora geral
+         */
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  chooseIf?:
+    | {
+        product?: (number | null) | Product;
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  specOverrides?:
+    | {
+        attributeKey: string;
+        winner?: (number | null) | Product;
+        noWinner?: boolean | null;
+        justification: string;
+        id?: string | null;
+      }[]
+    | null;
+  conclusion?: string | null;
+  sources?:
+    | {
+        title: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  seo?: {
+    metaTitle?: string | null;
+    /**
+     * 70 a 160 caracteres. Se ficar vazia, o resumo é usado.
+     */
+    metaDescription?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -606,6 +732,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'authors';
         value: number | Author;
+      } | null)
+    | ({
+        relationTo: 'contents';
+        value: number | Content;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -933,6 +1063,85 @@ export interface AuthorsSelect<T extends boolean = true> {
   slug?: T;
   bio?: T;
   image?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contents_select".
+ */
+export interface ContentsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  type?: T;
+  status?: T;
+  publishAt?: T;
+  reviewedAt?: T;
+  author?: T;
+  sponsored?: T;
+  referencedProducts?: T;
+  productSetKey?: T;
+  primarySubcategory?: T;
+  relatedSubcategories?: T;
+  summary?: T;
+  body?: T;
+  modelsAnalyzed?: T;
+  picks?:
+    | T
+    | {
+        product?: T;
+        variant?: T;
+        profileLabel?: T;
+        position?: T;
+        why?: T;
+        id?: T;
+      };
+  alsoConsidered?:
+    | T
+    | {
+        product?: T;
+        reason?: T;
+        id?: T;
+      };
+  comparedProducts?: T;
+  badges?:
+    | T
+    | {
+        product?: T;
+        label?: T;
+        id?: T;
+      };
+  chooseIf?:
+    | T
+    | {
+        product?: T;
+        text?: T;
+        id?: T;
+      };
+  specOverrides?:
+    | T
+    | {
+        attributeKey?: T;
+        winner?: T;
+        noWinner?: T;
+        justification?: T;
+        id?: T;
+      };
+  conclusion?: T;
+  sources?:
+    | T
+    | {
+        title?: T;
+        url?: T;
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        ogImage?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

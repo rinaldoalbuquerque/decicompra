@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 import { Authors } from './collections/Authors'
 import { Brands } from './collections/Brands'
 import { Categories } from './collections/Categories'
+import { Contents } from './collections/Contents'
 import { Media } from './collections/Media'
 import { Offers } from './collections/Offers'
 import { Products } from './collections/Products'
@@ -31,7 +32,7 @@ export default buildConfig({
     meta: { titleSuffix: ' · DeciCompra' },
     components: { beforeDashboard: ['/components/admin/MaintenancePanel#MaintenancePanel'] },
   },
-  collections: [Users, Media, Categories, Brands, Stores, Products, Variants, Offers, Redirects, Authors],
+  collections: [Users, Media, Categories, Brands, Stores, Products, Variants, Offers, Redirects, Authors, Contents],
   editor: lexicalEditor(),
   graphQL: { disable: true },
   i18n: { fallbackLanguage: 'pt', supportedLanguages: { pt } },

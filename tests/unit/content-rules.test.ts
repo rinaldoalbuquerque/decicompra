@@ -6,6 +6,7 @@ import {
   effectiveMetaDescription,
   extractProductIds,
   isPubliclyVisible,
+  removeProductFromContent,
   type ContentPublicationInput,
 } from '@/content/rules'
 
@@ -156,5 +157,46 @@ describe('vencedores (spec §5.4)', () => {
       { key: 'peso', winnerIds: [] },
     ])
     expect(specWinners(template, rows, [{ attributeKey: 'hz', winner: 2 }])[0]).toEqual({ key: 'hz', winnerIds: [2] })
+  })
+})
+
+describe('removeProductFromContent', () => {
+  it('tira o produto apagado de escolhas, comparados, selos e blocos; blocos sem sentido saem do texto', () => {
+    const body = {
+      root: {
+        type: 'root',
+        children: [
+          { type: 'paragraph', children: [] },
+          { type: 'block', fields: { blockType: 'productCard', product: 7 } },
+          { type: 'block', fields: { blockType: 'offerButton', product: { id: 7 }, store: 2 } },
+          { type: 'block', fields: { blockType: 'comparisonTable', products: [7, 8, 9] } },
+          { type: 'block', fields: { blockType: 'comparisonTable', products: [7, 8] } },
+          { type: 'block', fields: { blockType: 'tip', text: 'oi' } },
+        ],
+      },
+    }
+    const cleaned = removeProductFromContent(
+      {
+        body,
+        picks: [{ product: 7, profileLabel: 'x' }, { product: 8, profileLabel: 'y' }],
+        alsoConsidered: [{ product: { id: 7 } }],
+        comparedProducts: [7, 8],
+        badges: [{ product: 7, label: 'Geral' }],
+        chooseIf: [{ product: 8, text: 'a' }],
+        specOverrides: [{ attributeKey: 'hz', winner: 7 }, { attributeKey: 'som', winner: 8 }],
+      },
+      7,
+    )
+    expect(cleaned.picks).toEqual([{ product: 8, profileLabel: 'y' }])
+    expect(cleaned.alsoConsidered).toEqual([])
+    expect(cleaned.comparedProducts).toEqual([8])
+    expect(cleaned.badges).toEqual([])
+    expect(cleaned.chooseIf).toEqual([{ product: 8, text: 'a' }])
+    expect(cleaned.specOverrides).toEqual([{ attributeKey: 'som', winner: 8 }])
+    const blocks = (cleaned.body as typeof body).root.children.filter((n) => n.type === 'block')
+    expect(blocks.map((b) => (b as { fields: { blockType: string; products?: unknown } }).fields)).toEqual([
+      { blockType: 'comparisonTable', products: [8, 9] },
+      { blockType: 'tip', text: 'oi' },
+    ])
   })
 })

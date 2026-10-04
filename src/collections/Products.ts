@@ -14,6 +14,7 @@ export const Products: CollectionConfig = {
     defaultColumns: ['name', 'brand', 'subcategory', 'status', 'finalScore', 'hasActiveOffer'],
     group: 'Catálogo',
   },
+  versions: { maxPerDoc: 30 },
   access: { read: readPublishedProducts, create: loggedIn, update: updateProducts, delete: adminOrEditor },
   hooks: { beforeChange: [prepareProduct], afterChange: [afterProductChange], beforeDelete: [cascadeProductDelete] },
   fields: [

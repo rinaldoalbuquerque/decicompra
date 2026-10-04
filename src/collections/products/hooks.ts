@@ -9,6 +9,7 @@ import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { productPath } from '../../content/paths'
 import { loadSubcategoryRules } from '../catalog-rules'
+import { detachProductFromContents } from '../contents/hooks'
 import { applySlugRedirect } from '../redirects/apply'
 
 const count = (value: unknown) => (Array.isArray(value) ? value.length : 0)
@@ -88,6 +89,7 @@ export const afterProductChange: CollectionAfterChangeHook = async ({ doc, previ
 }
 
 export const cascadeProductDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  await detachProductFromContents(req, id)
   await withContext(req, { cascade: true }, () => req.payload.delete({ collection: 'offers', where: { product: { equals: id } }, req }))
   await withContext(req, { cascade: true }, () => req.payload.delete({ collection: 'variants', where: { product: { equals: id } }, req }))
 }

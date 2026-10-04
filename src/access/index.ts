@@ -1,4 +1,4 @@
-import type { Access, FieldAccess } from 'payload'
+import type { Access, FieldAccess, Where } from 'payload'
 
 export type Role = 'admin' | 'editor' | 'redator'
 
@@ -44,6 +44,23 @@ export const updateProducts: Access = ({ req }) => {
 export const adminFieldAccess: FieldAccess = ({ req }) => roleOf(req.user) === 'admin'
 
 export const loggedInField: FieldAccess = ({ req }) => Boolean(req.user)
+
+// Conteúdo público: publicado ou agendado com a data já alcançada (agendamento sem fila de tarefas)
+export const readPublicContents: Access = ({ req }) => {
+  if (req.user) return true
+  const visible: Where = {
+    and: [{ status: { in: ['publicado', 'agendado'] } }, { publishAt: { less_than_equal: new Date().toISOString() } }],
+  }
+  return visible
+}
+
+// Redator só edita conteúdos em rascunho ou em revisão
+export const updateContents: Access = ({ req }) => {
+  const role = roleOf(req.user)
+  if (role === 'admin' || role === 'editor') return true
+  if (role === 'redator') return { status: { in: ['rascunho', 'em_revisao'] } }
+  return false
+}
 
 // Variantes e ofertas de produtos em rascunho não aparecem para visitantes
 export const readOfPublishedProducts: Access = ({ req }) =>
