@@ -107,7 +107,7 @@
 **Interfaces:**
 - Consumes: nada
 - Produces: os valores abaixo, guardados num gerenciador de senhas ou bloco de notas seguro. **Nunca no git e nunca colados no chat.**
-  - `NEON_DEV_URL`, `NEON_TEST_URL`, `NEON_MAIN_URL`: strings de conexão **diretas** (o host **não** contém `-pooler`), cada uma de um branch
+  - `NEON_DEV_URL`, `NEON_TEST_URL`, `NEON_PRODUCTION_URL`: strings de conexão **diretas** (o host **não** contém `-pooler`), cada uma de um branch
   - `R2_ENDPOINT`: `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
   - `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`
   - Buckets `decicompra-media` (produção) e `decicompra-media-dev` (desenvolvimento/prévia), cada um com sua URL pública `https://pub-….r2.dev`
@@ -119,7 +119,7 @@
   2. Crie o projeto `decicompra`, Postgres na versão padrão. Região: **AWS São Paulo (sa-east-1)**. Se não aparecer na lista, escolha **AWS US East (N. Virginia)**.
   3. O branch padrão `main` será o banco de **produção**.
   4. Em *Branches → New branch*, crie `dev` (a partir de `main`) e depois `test` (a partir de `main`).
-  5. Para cada branch (`main`, `dev`, `test`), abra *Connect*, **desligue "Connection pooling"** e copie a string de conexão. Guarde como `NEON_MAIN_URL`, `NEON_DEV_URL` e `NEON_TEST_URL`.
+  5. Para cada branch (`production`, `dev`, `test`), abra *Connect*, **desligue "Connection pooling"** e copie a string de conexão. Guarde como `NEON_PRODUCTION_URL`, `NEON_DEV_URL` e `NEON_TEST_URL`.
 
   Esperado: três strings `postgresql://…@ep-….neon.tech/neondb?sslmode=require`, todas diferentes.
 
@@ -2076,7 +2076,7 @@
 - Consumes: todos os commits das Tarefas 2–7 e os valores da Tarefa 1
 - Produces:
   - repositório no GitHub com CI verde
-  - projeto na Vercel com deploy de **produção** (`*.vercel.app`, banco `main`, bucket `decicompra-media`) e deploys de **prévia** por branch (banco `dev`, bucket `decicompra-media-dev`)
+  - projeto na Vercel com deploy de **produção** (`*.vercel.app`, banco `production`, bucket `decicompra-media`) e deploys de **prévia** por branch (banco `dev`, bucket `decicompra-media-dev`)
   - usuário administrador criado nos bancos `dev` e `main`
 
 - [ ] **Step 1: Enviar o código para o GitHub**
@@ -2095,6 +2095,14 @@
 
   Se falhar, copie a mensagem de erro do passo que falhou para o agente. **Não** cole valores do `.env`.
 
+- [ ] **Step 3a: Criar o administrador de produção ANTES de publicar** (alterado após a revisão final)
+
+  Enquanto não existe usuário, a tela "Criar primeiro usuário" fica aberta para qualquer pessoa. Por isso o administrador de produção é criado pelo computador local, antes de o site ficar público:
+  1. No `.env`, troque temporariamente `DATABASE_URL` pela `NEON_PRODUCTION_URL` e `PAYLOAD_SECRET` pelo segredo **novo** de produção.
+  2. O agente roda `pnpm payload migrate` e `pnpm dev`.
+  3. Em http://localhost:3000/admin, crie o administrador de produção, com senha forte e diferente da de `dev`.
+  4. O agente para o servidor, e você **desfaz** as duas trocas no `.env`.
+
 - [ ] **Step 3: Importar o projeto na Vercel**
 
   Vercel → *Add New → Project* → importe `decicompra` do GitHub. Framework: **Next.js**. Não altere o comando de build: o `vercel.json` já define `pnpm run build:vercel`.
@@ -2103,7 +2111,7 @@
 
   | Variável | Production | Preview |
   |---|---|---|
-  | `DATABASE_URL` | `NEON_MAIN_URL` | `NEON_DEV_URL` |
+  | `DATABASE_URL` | `NEON_PRODUCTION_URL` | `NEON_DEV_URL` |
   | `PAYLOAD_SECRET` | **novo** segredo (gere outro com `node -e …`) | o mesmo do seu `.env` |
   | `R2_BUCKET` | `decicompra-media` | `decicompra-media-dev` |
   | `R2_PUBLIC_URL` | URL pública **produção** | URL pública **dev** |
@@ -2113,11 +2121,11 @@
 
   Clique em **Deploy**.
 
-  Esperado: o build roda `payload migrate` no banco `main` e depois `next build`, e termina com ✔.
+  Esperado: o build roda `payload migrate` no banco `production` e depois `next build`, e termina com ✔.
 
-- [ ] **Step 4: Criar o administrador de produção imediatamente**
+- [ ] **Step 4: Confirmar o administrador de produção**
 
-  Abra `https://<projeto>.vercel.app/admin`. A tela "Criar primeiro usuário" fica aberta para **qualquer pessoa** enquanto não existir um usuário, então crie o seu **agora**, com uma senha forte e diferente da de `dev`.
+  Abra `https://<projeto>.vercel.app/admin`. Deve aparecer a tela de **login**, e não a de "Criar primeiro usuário". Entre com o administrador criado no Step 3a.
 
   Esperado: login no painel em português.
 
