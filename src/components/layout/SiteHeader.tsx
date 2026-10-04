@@ -7,7 +7,7 @@ import { MobileMenu } from './MobileMenu'
 
 export function SiteHeader() {
   return (
-    <header className="relative bg-azul-profundo text-branco">
+    <header className="superficie-escura relative bg-azul-profundo text-branco">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-6 px-4 lg:px-8">
         <Link href="/" aria-label="DeciCompra, página inicial" className="rounded-md">
           <Logo />

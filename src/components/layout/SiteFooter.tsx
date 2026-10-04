@@ -5,7 +5,7 @@ import { footerColumns } from '@/config/navigation'
 
 export function SiteFooter({ year = new Date().getFullYear() }: { year?: number }) {
   return (
-    <footer className="bg-azul-profundo text-blue-100">
+    <footer className="superficie-escura bg-azul-profundo text-blue-100">
       <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-5 lg:px-8">
         <div>
           <span className="text-branco">

@@ -23,4 +23,9 @@ describe('SiteHeader', () => {
     ])
     expect(links.map((a) => a.getAttribute('href'))).toEqual(mainNav.map((l) => l.href))
   })
+
+  it('marca o cabeçalho como superfície escura (anel de foco branco)', () => {
+    render(<SiteHeader />)
+    expect(screen.getByRole('banner').classList.contains('superficie-escura')).toBe(true)
+  })
 })

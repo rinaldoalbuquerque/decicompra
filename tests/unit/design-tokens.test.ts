@@ -50,4 +50,16 @@ describe('tokens de cor (spec §7.1)', () => {
       expect(css).toContain(`--color-${name}: ${hex.toLowerCase()};`)
     }
   })
+
+  it('anel de foco: azul-eletrico sobre fundo claro e branco sobre fundo escuro atingem 3:1 (WCAG 1.4.11)', () => {
+    expect(contrastRatio(colors['azul-eletrico'], colors.branco)).toBeGreaterThanOrEqual(3)
+    expect(contrastRatio(colors.branco, colors['azul-profundo'])).toBeGreaterThanOrEqual(3)
+    expect(contrastRatio(colors['azul-eletrico'], colors['azul-profundo'])).toBeLessThan(3)
+  })
+
+  it('globals.css usa anel de foco branco nas superfícies escuras', () => {
+    const css = readFileSync(path.resolve(process.cwd(), 'src/app/(frontend)/globals.css'), 'utf8')
+    expect(css).toMatch(/:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--focus-ring, var\(--color-azul-eletrico\)\)/)
+    expect(css).toMatch(/\.superficie-escura\s*\{[^}]*--focus-ring:\s*var\(--color-branco\)/)
+  })
 })

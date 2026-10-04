@@ -45,8 +45,13 @@
     line-height: 1.15;
   }
 
+  /* Anel de foco: azul-eletrico em fundos claros; branco em superfícies escuras (contraste ≥ 3:1, WCAG 1.4.11) */
   :focus-visible {
-    outline: 3px solid var(--color-azul-eletrico);
+    outline: 3px solid var(--focus-ring, var(--color-azul-eletrico));
     outline-offset: 2px;
+  }
+
+  .superficie-escura {
+    --focus-ring: var(--color-branco);
   }
 }

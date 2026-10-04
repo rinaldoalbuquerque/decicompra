@@ -25,4 +25,9 @@ describe('SiteFooter', () => {
     render(<SiteFooter year={2027} />)
     expect(screen.getByRole('contentinfo').textContent).toContain('© 2027 DeciCompra')
   })
+
+  it('marca o rodapé como superfície escura (anel de foco branco)', () => {
+    render(<SiteFooter year={2026} />)
+    expect(screen.getByRole('contentinfo').classList.contains('superficie-escura')).toBe(true)
+  })
 })

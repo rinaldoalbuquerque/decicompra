@@ -1,7 +1,7 @@
 // Home provisória da Fase 0; a home completa (spec §6.1) é construída na Fase 2
 export default function HomePage() {
   return (
-    <section className="bg-azul-profundo text-branco">
+    <section className="superficie-escura bg-azul-profundo text-branco">
       <div className="mx-auto max-w-[1280px] px-4 py-20 lg:px-8 lg:py-28">
         <p className="text-sm font-semibold tracking-wide text-blue-200">
           ANÁLISES INDEPENDENTES · NÃO VENDEMOS PRODUTOS
