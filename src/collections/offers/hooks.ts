@@ -35,15 +35,17 @@ export const prepareOffer: CollectionBeforeChangeHook = async ({ data, originalD
 
 export async function refreshHasActiveOffer(req: PayloadRequest, productId: number | string | null): Promise<void> {
   if (productId === null) return
-  const exists = await req.payload.count({ collection: 'products', where: { id: { equals: productId } }, req })
-  if (exists.totalDocs === 0) return
+  const { docs } = await req.payload.find({ collection: 'products', where: { id: { equals: productId } }, depth: 0, limit: 1, req })
+  if (docs.length === 0) return
   const active = await req.payload.count({
     collection: 'offers',
     where: { and: [{ product: { equals: productId } }, { status: { equals: 'active' } }] },
     req,
   })
-  await withContext(req, { skipPublicationCheck: true }, () =>
-    req.payload.update({ collection: 'products', id: productId, data: { hasActiveOffer: active.totalDocs > 0 }, req }),
+  const hasActiveOffer = active.totalDocs > 0
+  if (Boolean(docs[0].hasActiveOffer) === hasActiveOffer) return
+  await withContext(req, { skipPublicationCheck: true, offerSync: true }, () =>
+    req.payload.update({ collection: 'products', id: productId, data: { hasActiveOffer }, req }),
   )
 }
 

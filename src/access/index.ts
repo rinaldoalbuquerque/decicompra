@@ -42,3 +42,17 @@ export const updateProducts: Access = ({ req }) => {
 }
 
 export const adminFieldAccess: FieldAccess = ({ req }) => roleOf(req.user) === 'admin'
+
+export const loggedInField: FieldAccess = ({ req }) => Boolean(req.user)
+
+// Variantes e ofertas de produtos em rascunho não aparecem para visitantes
+export const readOfPublishedProducts: Access = ({ req }) =>
+  req.user ? true : { 'product.status': { not_equals: 'rascunho' } }
+
+// Redator só altera variantes de produtos em rascunho
+export const updateVariants: Access = ({ req }) => {
+  const role = roleOf(req.user)
+  if (role === 'admin' || role === 'editor') return true
+  if (role === 'redator') return { 'product.status': { equals: 'rascunho' } }
+  return false
+}

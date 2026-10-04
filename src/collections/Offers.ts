@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminOrEditor, anyone } from '../access'
+import { adminOrEditor, loggedInField, readOfPublishedProducts } from '../access'
 import { relId } from '../lib/relations'
 import { httpsUrl } from '../lib/url'
 import { afterOfferChange, afterOfferDelete, prepareOffer } from './offers/hooks'
@@ -14,7 +14,7 @@ export const Offers: CollectionConfig = {
     group: 'Afiliados',
     description: 'Único lugar onde links e preços são editados. Os botões do site usam /ir/{id}.',
   },
-  access: { read: anyone, create: adminOrEditor, update: adminOrEditor, delete: adminOrEditor },
+  access: { read: readOfPublishedProducts, create: adminOrEditor, update: adminOrEditor, delete: adminOrEditor },
   hooks: { beforeChange: [prepareOffer], afterChange: [afterOfferChange], afterDelete: [afterOfferDelete] },
   fields: [
     { name: 'product', label: 'Produto', type: 'relationship', relationTo: 'products', required: true, index: true },
@@ -67,7 +67,7 @@ export const Offers: CollectionConfig = {
         { label: 'Indisponível', value: 'unavailable' },
       ],
     },
-    { name: 'notes', label: 'Observações internas', type: 'textarea' },
+    { name: 'notes', label: 'Observações internas', type: 'textarea', access: { read: loggedInField } },
     { name: 'title', label: 'Título', type: 'text', admin: { readOnly: true, position: 'sidebar' } },
   ],
 }

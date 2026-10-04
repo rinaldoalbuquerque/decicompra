@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminOnly, anyone } from '../access'
+import { adminOnly, anyone, loggedInField } from '../access'
 import { slugField } from '../fields/slug'
 
 export const Stores: CollectionConfig = {
@@ -24,6 +24,7 @@ export const Stores: CollectionConfig = {
       name: 'notes',
       label: 'Observações',
       type: 'textarea',
+      access: { read: loggedInField },
       admin: { description: 'Regras do programa (ex.: "não exibir preço", "não usar imagens").' },
     },
   ],

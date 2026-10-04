@@ -12,6 +12,16 @@ export const validateCategory: CollectionBeforeChangeHook = async ({ data, origi
   const existingId = operation === 'update' ? relId(originalDoc?.id) : null
   const parentId = relId(pick(data, originalDoc, 'parent'))
 
+  if (parentId === null && existingId !== null && relId(originalDoc?.parent) !== null) {
+    const products = await req.payload.count({ collection: 'products', where: { subcategory: { equals: existingId } }, req })
+    if (products.totalDocs > 0) {
+      throw new ValidationError({
+        collection: 'categories',
+        errors: [{ path: 'parent', message: 'Esta subcategoria tem produtos e não pode virar categoria de 1º nível.' }],
+      })
+    }
+  }
+
   if (parentId === null) {
     // Categoria de 1º nível: modelo, critérios e âncora só existem em subcategorias
     data.specTemplate = []
@@ -78,7 +88,11 @@ export const resyncSubcategoryProducts: CollectionAfterChangeHook = async ({ doc
       req.payload.update({ collection: 'products', id: product.id, data: {}, req }),
     )
     const variants = await req.payload.find({ collection: 'variants', where: { product: { equals: product.id } }, depth: 0, limit: 1000, req })
-    for (const variant of variants.docs) await req.payload.update({ collection: 'variants', id: variant.id, data: {}, req })
+    for (const variant of variants.docs) {
+      await withContext(req, { skipPublicationCheck: true }, () =>
+        req.payload.update({ collection: 'variants', id: variant.id, data: {}, req }),
+      )
+    }
   }
   return doc
 }

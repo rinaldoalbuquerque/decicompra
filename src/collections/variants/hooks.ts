@@ -6,13 +6,14 @@ import type {
   CollectionBeforeDeleteHook,
 } from 'payload'
 
+import { roleOf } from '../../access'
 import { specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
 import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { loadSubcategoryRules } from '../catalog-rules'
 import { refreshHasActiveOffer } from '../offers/hooks'
 
-export const prepareVariant: CollectionBeforeChangeHook = async ({ data, originalDoc, operation, req }) => {
+export const prepareVariant: CollectionBeforeChangeHook = async ({ data, originalDoc, operation, req, context }) => {
   const productId = relId(pick(data, originalDoc, 'product'))
   if (productId === null) {
     throw new ValidationError({ collection: 'variants', errors: [{ path: 'product', message: 'Escolha o produto.' }] })
@@ -25,7 +26,11 @@ export const prepareVariant: CollectionBeforeChangeHook = async ({ data, origina
   data.label = label
   data.title = `${product.name} — ${label}`
 
-  const errors = specValueErrors(template, specs).map((message) => ({ path: 'specs', message }))
+  // Ressincronização pela subcategoria não pode travar por valores antigos (o editor corrige depois)
+  const errors = context.skipPublicationCheck ? [] : specValueErrors(template, specs).map((message) => ({ path: 'specs', message }))
+  if (roleOf(req.user) === 'redator' && product.status !== 'rascunho') {
+    errors.push({ path: 'product', message: 'Redatores só podem alterar variantes de produtos em rascunho.' })
+  }
   // Na criação o Payload também passa originalDoc (sem id)
   const existingId = operation === 'update' ? relId(originalDoc?.id) : null
   const duplicates = await req.payload.count({

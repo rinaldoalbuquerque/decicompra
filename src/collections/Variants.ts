@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminOrEditor, anyone, loggedIn } from '../access'
+import { adminOrEditor, loggedIn, readOfPublishedProducts, updateVariants } from '../access'
 import {
   deleteVariantOffers,
   guardVariantDelete,
@@ -14,7 +14,7 @@ export const Variants: CollectionConfig = {
   slug: 'variants',
   labels: { singular: 'Variante', plural: 'Variantes' },
   admin: { useAsTitle: 'title', defaultColumns: ['title', 'modelCode', 'isReference'], group: 'Catálogo' },
-  access: { read: anyone, create: loggedIn, update: loggedIn, delete: adminOrEditor },
+  access: { read: readOfPublishedProducts, create: loggedIn, update: updateVariants, delete: adminOrEditor },
   hooks: {
     beforeChange: [prepareVariant],
     afterChange: [syncReference, refreshOfferTitles],
@@ -22,7 +22,16 @@ export const Variants: CollectionConfig = {
     afterDelete: [promoteReference],
   },
   fields: [
-    { name: 'product', label: 'Produto', type: 'relationship', relationTo: 'products', required: true, index: true },
+    {
+      name: 'product',
+      label: 'Produto',
+      type: 'relationship',
+      relationTo: 'products',
+      required: true,
+      index: true,
+      // Definido na criação; mudar de produto deixaria ofertas e referências inconsistentes
+      access: { update: () => false },
+    },
     { name: 'label', label: 'Rótulo', type: 'text', required: true, admin: { description: 'ex.: 55", 220 V, 8 GB/256 GB' } },
     { name: 'modelCode', label: 'Código do modelo', type: 'text', admin: { description: 'ex.: OLED55C4PSA' } },
     {

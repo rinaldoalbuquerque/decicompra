@@ -18,6 +18,8 @@ export const prepareProduct: CollectionBeforeChangeHook = async ({ data, origina
   data.specs = specs
   data.scores = scores
   data.finalScore = computeFinalScore(criteria, scores)
+  // Só as ofertas mudam este indicador; salvar o produto não pode sobrescrevê-lo
+  if (!context.offerSync) data.hasActiveOffer = operation === 'update' ? Boolean(originalDoc?.hasActiveOffer) : false
 
   const status = pick<ProductStatus>(data, originalDoc, 'status') ?? 'rascunho'
   if (status === 'analise' && !pick(data, originalDoc, 'publishedAt')) data.publishedAt = new Date().toISOString()
