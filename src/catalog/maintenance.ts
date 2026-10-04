@@ -13,6 +13,23 @@ export function productsWithoutActiveOfferWhere(): Where {
   return { and: [{ status: { not_equals: 'rascunho' } }, { hasActiveOffer: { equals: false } }] }
 }
 
+export const REVIEW_AFTER_MONTHS = 6
+
+function reviewLimit(now: Date): string {
+  const limit = new Date(now.getTime())
+  limit.setUTCMonth(limit.getUTCMonth() - REVIEW_AFTER_MONTHS)
+  return limit.toISOString()
+}
+
+// Revisão periódica (spec §5.8): conteúdos e produtos públicos revisados há mais de 6 meses
+export function contentsToReviewWhere(now: Date): Where {
+  return { and: [{ status: { in: ['publicado', 'agendado'] } }, { reviewedAt: { less_than: reviewLimit(now) } }] }
+}
+
+export function productsToReviewWhere(now: Date): Where {
+  return { and: [{ status: { not_equals: 'rascunho' } }, { reviewedAt: { less_than: reviewLimit(now) } }] }
+}
+
 function flatten(value: unknown, prefix: string, out: [string, string][]): void {
   if (Array.isArray(value)) value.forEach((item, index) => flatten(item, `${prefix}[${index}]`, out))
   else if (value !== null && typeof value === 'object') {

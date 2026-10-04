@@ -1,20 +1,28 @@
 import type { ServerProps } from 'payload'
 
-import { adminListUrl, productsWithoutActiveOfferWhere, staleOffersWhere } from '../../catalog/maintenance'
+import {
+  adminListUrl,
+  contentsToReviewWhere,
+  productsToReviewWhere,
+  productsWithoutActiveOfferWhere,
+  staleOffersWhere,
+} from '../../catalog/maintenance'
 
 // Exibido no início do painel (spec §8.4)
 export async function MaintenancePanel({ payload }: Pick<ServerProps, 'payload'>) {
   const now = new Date()
-  const staleWhere = staleOffersWhere(now)
-  const noOfferWhere = productsWithoutActiveOfferWhere()
-  const [stale, noOffer] = await Promise.all([
-    payload.count({ collection: 'offers', where: staleWhere }),
-    payload.count({ collection: 'products', where: noOfferWhere }),
-  ])
-  const items = [
-    { label: 'Ofertas desatualizadas (verificadas há mais de 30 dias)', count: stale.totalDocs, href: adminListUrl('offers', staleWhere) },
-    { label: 'Produtos publicados sem oferta ativa', count: noOffer.totalDocs, href: adminListUrl('products', noOfferWhere) },
-  ]
+  const checks = [
+    { label: 'Ofertas desatualizadas (verificadas há mais de 30 dias)', collection: 'offers', where: staleOffersWhere(now) },
+    { label: 'Produtos publicados sem oferta ativa', collection: 'products', where: productsWithoutActiveOfferWhere() },
+    { label: 'Produtos a revisar (revisados há mais de 6 meses)', collection: 'products', where: productsToReviewWhere(now) },
+    { label: 'Conteúdos a revisar (revisados há mais de 6 meses)', collection: 'contents', where: contentsToReviewWhere(now) },
+  ] as const
+  const counts = await Promise.all(checks.map((check) => payload.count({ collection: check.collection, where: check.where })))
+  const items = checks.map((check, index) => ({
+    label: check.label,
+    count: counts[index].totalDocs,
+    href: adminListUrl(check.collection, check.where),
+  }))
   return (
     <section
       aria-labelledby="manutencao-titulo"
