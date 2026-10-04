@@ -1,4 +1,5 @@
 import type { CollectionSlug, Payload } from 'payload'
+import sharp from 'sharp'
 
 import type { Criterion } from '@/catalog/score'
 import type { SpecAttribute } from '@/catalog/spec-template'
@@ -74,4 +75,60 @@ export async function createStore(payload: Payload, tracker: Tracker, data: { ac
     'stores',
     await payload.create({ collection: 'stores', data: { name: `Loja ${id}`, slug: `loja-${id}`, active: data.active ?? true } }),
   )
+}
+
+export async function createImage(payload: Payload, tracker: Tracker) {
+  const data = await sharp({ create: { width: 400, height: 300, channels: 3, background: '#2563EB' } }).png().toBuffer()
+  return tracker.add(
+    'media',
+    await payload.create({
+      collection: 'media',
+      data: { alt: 'Imagem de teste', credit: 'Teste automatizado' },
+      file: { data, mimetype: 'image/png', name: `teste-${uid()}.png`, size: data.length },
+    }),
+  )
+}
+
+export async function createProduct(
+  payload: Payload,
+  tracker: Tracker,
+  refs: { subcategoryId: number; brandId: number },
+) {
+  const id = uid()
+  return tracker.add(
+    'products',
+    await payload.create({
+      collection: 'products',
+      data: { name: `Produto ${id}`, slug: `produto-${id}`, brand: refs.brandId, subcategory: refs.subcategoryId, status: 'rascunho' },
+    }),
+  )
+}
+
+// Preenche o mínimo para status "ficha" com sampleSpecTemplate e sampleCriteria
+export async function makePublishable(payload: Payload, productId: number, imageId: number) {
+  const { docs } = await payload.find({ collection: 'variants', where: { product: { equals: productId } }, limit: 10 })
+  for (const variant of docs) {
+    await payload.update({ collection: 'variants', id: variant.id, data: { specs: [{ key: 'tamanho', value: '55' }] } })
+  }
+  return payload.update({
+    collection: 'products',
+    id: productId,
+    data: {
+      images: [imageId],
+      specs: [{ key: 'painel', value: 'OLED' }],
+      scores: [
+        { key: 'imagem', score: 9 },
+        { key: 'custo_beneficio', score: 8 },
+      ],
+      status: 'ficha',
+    },
+  })
+}
+
+export const ANALYSIS_DATA = {
+  verdict: 'Uma TV OLED excelente para filmes e games, com contraste perfeito e preço competitivo no Brasil.',
+  pros: [{ text: 'Contraste perfeito' }, { text: '144 Hz para games' }, { text: 'Bom processamento' }],
+  cons: [{ text: 'Brilho limitado em sala clara' }, { text: 'Sem DTS' }],
+  sources: [{ title: 'Ficha técnica oficial', url: 'https://www.lg.com/br' }],
+  reviewedAt: '2026-10-03T12:00:00.000Z',
 }

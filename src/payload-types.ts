@@ -72,18 +72,26 @@ export interface Config {
     categories: Category;
     brands: Brand;
     stores: Store;
+    products: Product;
+    variants: Variant;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    products: {
+      variants: 'variants';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     stores: StoresSelect<false> | StoresSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    variants: VariantsSelect<false> | VariantsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -321,6 +329,152 @@ export interface Store {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  /**
+   * ex.: LG C4
+   */
+  name: string;
+  /**
+   * Gerado a partir do nome se ficar vazio. Só letras minúsculas, números e hífens.
+   */
+  slug?: string | null;
+  status: 'rascunho' | 'ficha' | 'analise';
+  /**
+   * Calculada pelas notas de cada critério.
+   */
+  finalScore?: number | null;
+  hasActiveOffer?: boolean | null;
+  publishedAt?: string | null;
+  reviewedAt?: string | null;
+  brand: number | Brand;
+  subcategory: number | Category;
+  /**
+   * A primeira é a principal.
+   */
+  images?: (number | Media)[] | null;
+  variants?: {
+    docs?: (number | Variant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * As linhas vêm do modelo da subcategoria. Salve para atualizar a lista.
+   */
+  specs?:
+    | {
+        key: string;
+        label?: string | null;
+        value?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * De 0 a 10, com uma casa decimal. As linhas vêm dos critérios da subcategoria.
+   */
+  scores?:
+    | {
+        key: string;
+        label?: string | null;
+        score?: number | null;
+        justification?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  verdict?: string | null;
+  pros?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  cons?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  recommendedFor?: string | null;
+  avoidIf?: string | null;
+  fullReview?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  sources?:
+    | {
+        title: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  faq?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  seo?: {
+    metaTitle?: string | null;
+    /**
+     * 70 a 160 caracteres. Se ficar vazia, o veredito é usado.
+     */
+    metaDescription?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variants".
+ */
+export interface Variant {
+  id: number;
+  product: number | Product;
+  /**
+   * ex.: 55", 220 V, 8 GB/256 GB
+   */
+  label: string;
+  /**
+   * ex.: OLED55C4PSA
+   */
+  modelCode?: string | null;
+  voltage?: ('127v' | '220v' | 'bivolt') | null;
+  /**
+   * A usada em cards, listas e comparativos. Só uma por produto.
+   */
+  isReference?: boolean | null;
+  /**
+   * As linhas vêm do modelo da subcategoria (atributos que variam por variante).
+   */
+  specs?:
+    | {
+        key: string;
+        label?: string | null;
+        value?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  title?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -362,6 +516,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stores';
         value: number | Store;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'variants';
+        value: number | Variant;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -550,6 +712,101 @@ export interface StoresSelect<T extends boolean = true> {
   affiliateProgram?: T;
   active?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  status?: T;
+  finalScore?: T;
+  hasActiveOffer?: T;
+  publishedAt?: T;
+  reviewedAt?: T;
+  brand?: T;
+  subcategory?: T;
+  images?: T;
+  variants?: T;
+  specs?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  scores?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        score?: T;
+        justification?: T;
+        id?: T;
+      };
+  verdict?: T;
+  pros?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  cons?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  recommendedFor?: T;
+  avoidIf?: T;
+  fullReview?: T;
+  sources?:
+    | T
+    | {
+        title?: T;
+        url?: T;
+        id?: T;
+      };
+  faq?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variants_select".
+ */
+export interface VariantsSelect<T extends boolean = true> {
+  product?: T;
+  label?: T;
+  modelCode?: T;
+  voltage?: T;
+  isReference?: T;
+  specs?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  title?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -45,8 +45,11 @@ export const validateCategory: CollectionBeforeChangeHook = async ({ data, origi
 }
 
 export const guardCategoryDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
-  const children = await req.payload.count({ collection: 'categories', where: { parent: { equals: id } }, req })
-  if (children.totalDocs > 0) {
-    throw new APIError('Não é possível apagar: esta categoria tem subcategorias.', 409, undefined, true)
+  const [children, products] = await Promise.all([
+    req.payload.count({ collection: 'categories', where: { parent: { equals: id } }, req }),
+    req.payload.count({ collection: 'products', where: { subcategory: { equals: id } }, req }),
+  ])
+  if (children.totalDocs > 0 || products.totalDocs > 0) {
+    throw new APIError('Não é possível apagar: existem subcategorias ou produtos ligados a esta categoria.', 409, undefined, true)
   }
 }
