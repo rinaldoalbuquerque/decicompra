@@ -76,6 +76,7 @@ export interface Config {
     variants: Variant;
     offers: Offer;
     redirects: Redirect;
+    authors: Author;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -97,6 +98,7 @@ export interface Config {
     variants: VariantsSelect<false> | VariantsSelect<true>;
     offers: OffersSelect<false> | OffersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    authors: AuthorsSelect<false> | AuthorsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -524,6 +526,24 @@ export interface Redirect {
   createdAt: string;
 }
 /**
+ * Quem assina os conteúdos. Na v1 há só a "Equipe DeciCompra"; não crie autores fictícios.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors".
+ */
+export interface Author {
+  id: number;
+  name: string;
+  /**
+   * Gerado a partir do nome se ficar vazio. Só letras minúsculas, números e hífens.
+   */
+  slug?: string | null;
+  bio?: string | null;
+  image?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -582,6 +602,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'redirects';
         value: number | Redirect;
+      } | null)
+    | ({
+        relationTo: 'authors';
+        value: number | Author;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -897,6 +921,18 @@ export interface RedirectsSelect<T extends boolean = true> {
   to?: T;
   type?: T;
   auto?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors_select".
+ */
+export interface AuthorsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  bio?: T;
+  image?: T;
   updatedAt?: T;
   createdAt?: T;
 }

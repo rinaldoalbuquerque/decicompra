@@ -7,6 +7,7 @@ import * as migration_20261004_034244_brands_stores from './20261004_034244_bran
 import * as migration_20261004_034738_products_variants from './20261004_034738_products_variants';
 import * as migration_20261004_035250_offers from './20261004_035250_offers';
 import * as migration_20261004_123906_redirects from './20261004_123906_redirects';
+import * as migration_20261004_124229_authors from './20261004_124229_authors';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20261004_123906_redirects.up,
     down: migration_20261004_123906_redirects.down,
-    name: '20261004_123906_redirects'
+    name: '20261004_123906_redirects',
+  },
+  {
+    up: migration_20261004_124229_authors.up,
+    down: migration_20261004_124229_authors.down,
+    name: '20261004_124229_authors'
   },
 ];

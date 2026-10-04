@@ -7,6 +7,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { Authors } from './collections/Authors'
 import { Brands } from './collections/Brands'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
@@ -30,7 +31,7 @@ export default buildConfig({
     meta: { titleSuffix: ' · DeciCompra' },
     components: { beforeDashboard: ['/components/admin/MaintenancePanel#MaintenancePanel'] },
   },
-  collections: [Users, Media, Categories, Brands, Stores, Products, Variants, Offers, Redirects],
+  collections: [Users, Media, Categories, Brands, Stores, Products, Variants, Offers, Redirects, Authors],
   editor: lexicalEditor(),
   graphQL: { disable: true },
   i18n: { fallbackLanguage: 'pt', supportedLanguages: { pt } },

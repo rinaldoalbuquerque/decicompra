@@ -29,9 +29,9 @@ Faça o commit da migração junto com a mudança.
 ## Categorias iniciais
 
 ```bash
-pnpm seed:taxonomia
+pnpm seed
 ```
-Cria as 5 categorias e as subcategorias da spec (com os pesos das âncoras). Pode rodar de novo sem duplicar.
+Cria as 5 categorias e as subcategorias da spec (com os pesos das âncoras) e o autor "Equipe DeciCompra". Pode rodar de novo sem duplicar.
 
 ## Rodar um comando em outro ambiente
 
