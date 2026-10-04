@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs'
 
 import dotenv from 'dotenv'
 
+import { toShellCommand } from './with-env-lib.mjs'
+
 const [file, ...command] = process.argv.slice(2)
 if (!file || command.length === 0) {
   console.error('Uso: node scripts/with-env.mjs <arquivo .env> <comando...>')
@@ -16,5 +18,5 @@ try {
   host = new URL(env.DATABASE_URL).hostname
 } catch {}
 console.log(`[with-env] ${file} → banco ${host}`)
-const result = spawnSync(command.join(' '), { env, shell: true, stdio: 'inherit' })
+const result = spawnSync(toShellCommand(command), { env, shell: true, stdio: 'inherit' })
 process.exit(result.status ?? 1)

@@ -63,6 +63,27 @@ export function validateSpecValue(attr: SpecAttribute, value: string | null | un
   }
 }
 
+// Forma canônica para guardar: número com ponto decimal, sim/não minúsculo, demais aparados
+export function normalizeSpecValue(attr: SpecAttribute, value: string | null | undefined): string | null {
+  const v = value?.trim()
+  if (!v) return null
+  if (attr.type === 'number' && /^-?\d+(?:[.,]\d+)?$/.test(v)) return v.replace(',', '.')
+  if (attr.type === 'boolean') {
+    const lower = v.toLowerCase()
+    if (lower === 'sim') return 'sim'
+    if (lower === 'não' || lower === 'nao') return 'não'
+  }
+  return v
+}
+
+export function normalizeSpecRows(template: SpecAttribute[], rows: SpecRow[]): SpecRow[] {
+  const byKey = new Map(template.map((attr) => [attr.key, attr]))
+  return rows.map((row) => {
+    const attr = byKey.get(row.key)
+    return attr ? { ...row, value: normalizeSpecValue(attr, row.value) } : row
+  })
+}
+
 export function specValueErrors(template: SpecAttribute[], rows: SpecRow[]): string[] {
   const byKey = new Map(template.map((attr) => [attr.key, attr]))
   return rows.flatMap((row) => {

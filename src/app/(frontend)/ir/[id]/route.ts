@@ -5,6 +5,8 @@ import { resolveOutbound, type OutboundOffer } from '@/catalog/outbound'
 
 export const dynamic = 'force-dynamic'
 
+const MAX_INT = 2_147_483_647
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const location = resolveOutbound(await loadOffer(id))
@@ -15,9 +17,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 async function loadOffer(id: string): Promise<OutboundOffer | null> {
-  if (!/^\d+$/.test(id)) return null
-  const payload = await getPayload({ config })
-  const offer = await payload.findByID({ collection: 'offers', id: Number(id), depth: 1, disableErrors: true })
+  // Só ids que cabem num inteiro do Postgres; qualquer falha leva para a home em vez de erro 500
+  if (!/^[1-9]\d{0,9}$/.test(id) || Number(id) > MAX_INT) return null
+  let offer
+  try {
+    const payload = await getPayload({ config })
+    offer = await payload.findByID({ collection: 'offers', id: Number(id), depth: 1, disableErrors: true })
+  } catch (error) {
+    console.error('[/ir] falha ao carregar a oferta', id, error)
+    return null
+  }
   if (!offer) return null
   const store = typeof offer.store === 'object' && offer.store ? offer.store : null
   const product = typeof offer.product === 'object' && offer.product ? offer.product : null
@@ -25,6 +34,6 @@ async function loadOffer(id: string): Promise<OutboundOffer | null> {
     status: offer.status,
     affiliateUrl: offer.affiliateUrl,
     store: store ? { active: Boolean(store.active) } : null,
-    product: product?.slug ? { slug: product.slug } : null,
+    product: product?.slug ? { slug: product.slug, status: product.status } : null,
   }
 }

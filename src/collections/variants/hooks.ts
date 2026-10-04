@@ -7,7 +7,7 @@ import type {
 } from 'payload'
 
 import { roleOf } from '../../access'
-import { specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
+import { normalizeSpecRows, specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
 import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { loadSubcategoryRules } from '../catalog-rules'
@@ -20,7 +20,7 @@ export const prepareVariant: CollectionBeforeChangeHook = async ({ data, origina
   }
   const product = await req.payload.findByID({ collection: 'products', id: productId, depth: 0, req })
   const { template } = await loadSubcategoryRules(req, relId(product.subcategory))
-  const specs = syncSpecRows(template, pick<SpecRow[]>(data, originalDoc, 'specs'), 'variant')
+  const specs = normalizeSpecRows(template, syncSpecRows(template, pick<SpecRow[]>(data, originalDoc, 'specs'), 'variant'))
   const label = String(pick(data, originalDoc, 'label') ?? '').trim()
   data.specs = specs
   data.label = label

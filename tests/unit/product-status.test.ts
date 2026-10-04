@@ -71,3 +71,11 @@ describe('checkProductPublication', () => {
     ])
   })
 })
+
+describe('subcategoria sem critérios', () => {
+  it('explica que faltam critérios na subcategoria', () => {
+    const errors = checkProductPublication({ ...ficha, finalScore: null, criteriaCount: 0 })
+    expect(errors).toContain('A subcategoria ainda não tem critérios de nota; cadastre-os antes de publicar.')
+    expect(errors).not.toContain('Preencha a nota de todos os critérios.')
+  })
+})

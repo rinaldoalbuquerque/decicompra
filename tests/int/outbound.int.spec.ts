@@ -2,7 +2,16 @@ import { afterAll, describe, expect, it } from 'vitest'
 
 import { GET } from '@/app/(frontend)/ir/[id]/route'
 
-import { createBrand, createCategoryPair, createOffer, createProduct, createStore, Tracker } from './helpers/fixtures'
+import {
+  createBrand,
+  createCategoryPair,
+  createImage,
+  createOffer,
+  createProduct,
+  createStore,
+  makePublishable,
+  Tracker,
+} from './helpers/fixtures'
 import { getTestPayload } from './helpers/getTestPayload'
 
 const payloadPromise = getTestPayload()
@@ -38,12 +47,17 @@ describe('/ir/{id}', () => {
     expect(res.headers.get('location')).toBe('https://nova.loja.com.br/x?tag=novo')
   })
 
-  it('oferta indisponível ou loja inativa volta para o produto', async () => {
+  it('oferta indisponível ou loja inativa volta para o produto publicado; produto em rascunho vai para a home', async () => {
     const { payload, product, offer } = await setup()
     await payload.update({ collection: 'offers', id: offer.id, data: { status: 'unavailable' } })
+    expect((await go(offer.id)).headers.get('location')).toBe('/')
+
+    const image = await createImage(payload, tracker)
+    await makePublishable(payload, product.id, image.id)
     expect((await go(offer.id)).headers.get('location')).toBe(`/produtos/${product.slug}/`)
 
     const inactive = await setup(false)
+    await makePublishable(payload, inactive.product.id, (await createImage(payload, tracker)).id)
     expect((await go(inactive.offer.id)).headers.get('location')).toBe(`/produtos/${inactive.product.slug}/`)
   })
 

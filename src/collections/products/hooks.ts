@@ -4,7 +4,7 @@ import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionB
 import { roleOf } from '../../access'
 import { checkProductPublication, type ProductStatus } from '../../catalog/product-status'
 import { computeFinalScore, syncScoreRows, type ScoreRow } from '../../catalog/score'
-import { missingRequiredSpecs, specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
+import { missingRequiredSpecs, normalizeSpecRows, specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
 import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { loadSubcategoryRules } from '../catalog-rules'
@@ -13,7 +13,7 @@ const count = (value: unknown) => (Array.isArray(value) ? value.length : 0)
 
 export const prepareProduct: CollectionBeforeChangeHook = async ({ data, originalDoc, operation, req, context }) => {
   const { template, criteria } = await loadSubcategoryRules(req, relId(pick(data, originalDoc, 'subcategory')))
-  const specs = syncSpecRows(template, pick<SpecRow[]>(data, originalDoc, 'specs'), 'product')
+  const specs = normalizeSpecRows(template, syncSpecRows(template, pick<SpecRow[]>(data, originalDoc, 'specs'), 'product'))
   const scores = syncScoreRows(criteria, pick<ScoreRow[]>(data, originalDoc, 'scores'))
   data.specs = specs
   data.scores = scores
@@ -48,6 +48,7 @@ export const prepareProduct: CollectionBeforeChangeHook = async ({ data, origina
       ...checkProductPublication({
         status,
         finalScore: data.finalScore as number | null,
+        criteriaCount: criteria.length,
         imageCount: count(pick(data, originalDoc, 'images')),
         variantCount: variants.length,
         missingSpecs,

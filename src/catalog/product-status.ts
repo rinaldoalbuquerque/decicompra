@@ -3,6 +3,7 @@ export type ProductStatus = 'rascunho' | 'ficha' | 'analise'
 export type PublicationInput = {
   status: ProductStatus
   finalScore: number | null
+  criteriaCount?: number
   imageCount: number
   variantCount: number
   missingSpecs: string[]
@@ -19,7 +20,8 @@ export function checkProductPublication(input: PublicationInput): string[] {
   if (input.status === 'rascunho') return []
   const errors: string[] = []
 
-  if (input.finalScore === null) errors.push('Preencha a nota de todos os critérios.')
+  if (input.criteriaCount === 0) errors.push('A subcategoria ainda não tem critérios de nota; cadastre-os antes de publicar.')
+  else if (input.finalScore === null) errors.push('Preencha a nota de todos os critérios.')
   if (input.imageCount < 1) errors.push('Adicione pelo menos 1 imagem.')
   if (input.variantCount < 1) errors.push('Cadastre pelo menos 1 variante.')
   if (input.missingSpecs.length > 0) {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   missingRequiredSpecs,
+  normalizeSpecValue,
   specValueErrors,
   syncSpecRows,
   validateSpecTemplate,
@@ -95,5 +96,30 @@ describe('validateSpecTemplate', () => {
       'A chave "Taxa Hz" é inválida: use letras minúsculas, números e _ (ex.: taxa_atualizacao).',
       'O atributo "Cor" é do tipo opção e precisa de pelo menos uma opção.',
     ])
+  })
+})
+
+describe('normalizeSpecValue', () => {
+  const [painel, taxa, , dolby] = template
+
+  it('guarda números com ponto decimal e sem espaços', () => {
+    expect(normalizeSpecValue(taxa, ' 4,5 ')).toBe('4.5')
+    expect(normalizeSpecValue(taxa, '120')).toBe('120')
+  })
+
+  it('padroniza sim/não', () => {
+    expect(normalizeSpecValue(dolby, ' Sim ')).toBe('sim')
+    expect(normalizeSpecValue(dolby, 'nao')).toBe('não')
+    expect(normalizeSpecValue(dolby, 'NÃO')).toBe('não')
+  })
+
+  it('apara opções e textos; vazio vira null', () => {
+    expect(normalizeSpecValue(painel, ' OLED ')).toBe('OLED')
+    expect(normalizeSpecValue(painel, '   ')).toBeNull()
+    expect(normalizeSpecValue(taxa, null)).toBeNull()
+  })
+
+  it('não mexe em valor inválido (a validação aponta o erro)', () => {
+    expect(normalizeSpecValue(taxa, '120Hz')).toBe('120Hz')
   })
 })

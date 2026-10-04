@@ -24,3 +24,10 @@ describe('resolveOutbound', () => {
     expect(resolveOutbound({ ...offer, status: 'unavailable', product: null })).toBe('/')
   })
 })
+
+describe('resolveOutbound com produto em rascunho', () => {
+  it('oferta indisponível de produto em rascunho vai para a home (a página do produto não é pública)', () => {
+    expect(resolveOutbound({ ...offer, status: 'unavailable', product: { slug: 'lg-c4', status: 'rascunho' } })).toBe('/')
+    expect(resolveOutbound({ ...offer, status: 'unavailable', product: { slug: 'lg-c4', status: 'ficha' } })).toBe('/produtos/lg-c4/')
+  })
+})

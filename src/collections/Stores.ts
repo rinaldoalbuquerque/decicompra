@@ -2,12 +2,14 @@ import type { CollectionConfig } from 'payload'
 
 import { adminOnly, anyone, loggedInField } from '../access'
 import { slugField } from '../fields/slug'
+import { guardStoreDelete } from './stores/hooks'
 
 export const Stores: CollectionConfig = {
   slug: 'stores',
   labels: { singular: 'Loja', plural: 'Lojas' },
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'active', 'affiliateProgram'], group: 'Afiliados' },
   access: { read: anyone, create: adminOnly, update: adminOnly, delete: adminOnly },
+  hooks: { beforeDelete: [guardStoreDelete] },
   fields: [
     { name: 'name', label: 'Nome', type: 'text', required: true },
     slugField('name'),

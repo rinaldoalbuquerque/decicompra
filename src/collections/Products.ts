@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { adminOrEditor, loggedIn, readPublishedProducts, updateProducts } from '../access'
 import { slugField } from '../fields/slug'
 import { httpsUrl } from '../lib/url'
+import { validateScore } from './products/validate-score'
 import { afterProductChange, cascadeProductDelete, prepareProduct } from './products/hooks'
 
 export const Products: CollectionConfig = {
@@ -103,7 +104,7 @@ export const Products: CollectionConfig = {
                   type: 'row',
                   fields: [
                     { name: 'label', label: 'Critério', type: 'text', admin: { readOnly: true, width: '60%' } },
-                    { name: 'score', label: 'Nota', type: 'number', min: 0, max: 10, admin: { step: 0.1, width: '40%' } },
+                    { name: 'score', label: 'Nota', type: 'number', min: 0, max: 10, validate: validateScore, admin: { step: 0.1, width: '40%' } },
                   ],
                 },
                 { name: 'justification', label: 'Justificativa', type: 'textarea' },

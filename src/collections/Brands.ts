@@ -3,12 +3,14 @@ import type { CollectionConfig } from 'payload'
 import { adminOrEditor, anyone } from '../access'
 import { slugField } from '../fields/slug'
 import { httpsUrl } from '../lib/url'
+import { guardBrandDelete } from './brands/hooks'
 
 export const Brands: CollectionConfig = {
   slug: 'brands',
   labels: { singular: 'Marca', plural: 'Marcas' },
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'slug'], group: 'Catálogo' },
   access: { read: anyone, create: adminOrEditor, update: adminOrEditor, delete: adminOrEditor },
+  hooks: { beforeDelete: [guardBrandDelete] },
   fields: [
     { name: 'name', label: 'Nome', type: 'text', required: true },
     slugField('name'),
