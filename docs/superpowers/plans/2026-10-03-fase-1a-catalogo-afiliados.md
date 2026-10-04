@@ -3956,7 +3956,7 @@ Os níveis de acesso são Administrador, Editor e Redator. O link `/ir/{id}` red
   ## Rodar um comando em outro ambiente
 
   ```bash
-  node scripts/with-env.mjs .env.production.local pnpm payload migrate:status
+  node scripts/with-env.mjs .env.producao.local pnpm payload migrate:status
   ```
   Mostra o banco de destino antes de rodar. Use com cuidado: em produção, os comandos gravam dados reais.
   ````
@@ -4010,7 +4010,7 @@ Os níveis de acesso são Administrador, Editor e Redator. O link `/ir/{id}` red
 - [ ] **Step 3: Categorias iniciais na produção (pedir autorização ao responsável)**
 
   ```bash
-  node scripts/with-env.mjs .env.production.local pnpm seed:taxonomia
+  node scripts/with-env.mjs .env.producao.local pnpm seed:taxonomia
   ```
   Esperado:
   - a linha `[with-env]` mostra o host do banco **production**

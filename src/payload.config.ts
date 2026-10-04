@@ -27,6 +27,7 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' · DeciCompra' },
+    components: { beforeDashboard: ['/components/admin/MaintenancePanel#MaintenancePanel'] },
   },
   collections: [Users, Media, Categories, Brands, Stores, Products, Variants, Offers],
   editor: lexicalEditor(),
