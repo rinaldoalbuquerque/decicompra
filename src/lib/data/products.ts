@@ -48,6 +48,24 @@ export async function getPublicProduct(slug: string, now = new Date()): Promise<
   }
 }
 
+// Produtos públicos da mesma subcategoria com nota mais próxima (bloco "Alternativas")
+export async function getSimilarProducts(subcategoryId: number, excludeId: number, score: number | null, limit = 3) {
+  const payload = await getSitePayload()
+  const { docs } = await payload.find({
+    collection: 'products',
+    where: { and: [{ subcategory: { equals: subcategoryId } }, { id: { not_equals: excludeId } }] },
+    depth: 0,
+    limit: 50,
+    ...PUBLIC,
+  })
+  const ranked = docs
+    .filter((product) => product.status !== 'rascunho')
+    .sort((a, b) => Math.abs((a.finalScore ?? 0) - (score ?? 0)) - Math.abs((b.finalScore ?? 0) - (score ?? 0)))
+    .slice(0, limit)
+  const summaries = await getProductSummaries(ranked.map((product) => product.id))
+  return ranked.map((product) => summaries.get(product.id)).filter((item): item is NonNullable<typeof item> => Boolean(item))
+}
+
 // Resumos (card, botão, tabela) de vários produtos numa consulta; rascunhos ficam de fora
 export async function getProductSummaries(ids: number[], now = new Date()): Promise<Map<number, ProductSummary & { product: Product }>> {
   const result = new Map<number, ProductSummary & { product: Product }>()

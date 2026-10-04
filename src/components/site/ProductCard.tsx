@@ -12,7 +12,7 @@ import { StoreButtons } from './StoreButtons'
 export function ProductCard({ summary, label }: { summary: ProductSummary; label?: string }) {
   return (
     <article className="grid gap-4 rounded-xl border border-slate-200 bg-branco p-4 sm:grid-cols-[160px_1fr]">
-      <ProductImage image={summary.image} sizes="160px" />
+      <ProductImage image={summary.image} sizes="160px" className="max-w-[200px]" />
       <div className="space-y-2">
         {label ? <p className="text-xs font-bold uppercase tracking-wide text-verde-texto">{label}</p> : null}
         <h3 className="text-lg font-bold">
