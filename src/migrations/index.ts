@@ -3,6 +3,7 @@ import * as migration_20261004_004953_media_r2 from './20261004_004953_media_r2'
 import * as migration_20261004_033429_roles from './20261004_033429_roles';
 import * as migration_20261004_033851_categories from './20261004_033851_categories';
 import * as migration_20261004_034110_slug_optional from './20261004_034110_slug_optional';
+import * as migration_20261004_034244_brands_stores from './20261004_034244_brands_stores';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20261004_034110_slug_optional.up,
     down: migration_20261004_034110_slug_optional.down,
-    name: '20261004_034110_slug_optional'
+    name: '20261004_034110_slug_optional',
+  },
+  {
+    up: migration_20261004_034244_brands_stores.up,
+    down: migration_20261004_034244_brands_stores.down,
+    name: '20261004_034244_brands_stores'
   },
 ];

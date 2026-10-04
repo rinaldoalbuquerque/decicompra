@@ -70,6 +70,8 @@ export interface Config {
     users: User;
     media: Media;
     categories: Category;
+    brands: Brand;
+    stores: Store;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +82,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    brands: BrandsSelect<false> | BrandsSelect<true>;
+    stores: StoresSelect<false> | StoresSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -276,6 +280,47 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands".
+ */
+export interface Brand {
+  id: number;
+  name: string;
+  /**
+   * Gerado a partir do nome se ficar vazio. Só letras minúsculas, números e hífens.
+   */
+  slug?: string | null;
+  logo?: (number | null) | Media;
+  description?: string | null;
+  officialSite?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stores".
+ */
+export interface Store {
+  id: number;
+  name: string;
+  /**
+   * Gerado a partir do nome se ficar vazio. Só letras minúsculas, números e hífens.
+   */
+  slug?: string | null;
+  logo?: (number | null) | Media;
+  affiliateProgram?: string | null;
+  /**
+   * Loja inativa: os links /ir/ dela levam para a página do produto.
+   */
+  active?: boolean | null;
+  /**
+   * Regras do programa (ex.: "não exibir preço", "não usar imagens").
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -309,6 +354,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'brands';
+        value: number | Brand;
+      } | null)
+    | ({
+        relationTo: 'stores';
+        value: number | Store;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -470,6 +523,33 @@ export interface CategoriesSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands_select".
+ */
+export interface BrandsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  logo?: T;
+  description?: T;
+  officialSite?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stores_select".
+ */
+export interface StoresSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  logo?: T;
+  affiliateProgram?: T;
+  active?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

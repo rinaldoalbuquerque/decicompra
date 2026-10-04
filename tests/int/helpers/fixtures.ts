@@ -62,3 +62,16 @@ export async function createCategoryPair(
   )
   return { category, subcategory }
 }
+
+export async function createBrand(payload: Payload, tracker: Tracker) {
+  const id = uid()
+  return tracker.add('brands', await payload.create({ collection: 'brands', data: { name: `Marca ${id}`, slug: `marca-${id}` } }))
+}
+
+export async function createStore(payload: Payload, tracker: Tracker, data: { active?: boolean } = {}) {
+  const id = uid()
+  return tracker.add(
+    'stores',
+    await payload.create({ collection: 'stores', data: { name: `Loja ${id}`, slug: `loja-${id}`, active: data.active ?? true } }),
+  )
+}
