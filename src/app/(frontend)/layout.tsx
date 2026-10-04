@@ -1,17 +1,19 @@
+import type { Metadata } from 'next'
 import React from 'react'
-import './styles.css'
 
-export const metadata = {
-  description: 'A blank template using Payload in a Next.js app.',
-  title: 'Payload Blank Template',
+import { inter, manrope } from '@/design/fonts'
+
+import './globals.css'
+
+export const metadata: Metadata = {
+  title: { default: 'DeciCompra · Compare. Entenda. Decida.', template: '%s | DeciCompra' },
+  description: 'Análises independentes, comparativos e guias de compra para você escolher melhor.',
 }
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="pt-BR" className={`${inter.variable} ${manrope.variable}`}>
+      <body className="bg-branco text-texto antialiased">
         <main>{children}</main>
       </body>
     </html>

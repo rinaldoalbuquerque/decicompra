@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+/* Cores da marca (spec §7.1). Mantenha igual a src/design/tokens.ts: o teste design-tokens confere. */
+@theme {
+  --color-azul-profundo: #172554;
+  --color-azul-eletrico: #2563eb;
+  --color-verde: #16a34a;
+  --color-verde-texto: #15803d;
+  --color-cinza-claro: #f1f5f9;
+  --color-branco: #ffffff;
+  --color-texto: #0f172a;
+  --color-texto-suave: #475569;
+  --color-negativo: #dc2626;
+}
+
+/* Fontes auto-hospedadas pelo next/font (variáveis definidas no <html>) */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color: var(--color-texto);
+    background: var(--color-branco);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      font-size: 1.0625rem;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    line-height: 1.15;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-azul-eletrico);
+    outline-offset: 2px;
+  }
+}
