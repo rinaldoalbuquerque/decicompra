@@ -124,6 +124,10 @@ export interface UserAuthOperations {
 export interface User {
   id: number;
   name: string;
+  /**
+   * Administrador: tudo. Editor: publica e cuida de ofertas. Redator: só rascunhos.
+   */
+  role: 'admin' | 'editor' | 'redator';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -280,6 +284,7 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
