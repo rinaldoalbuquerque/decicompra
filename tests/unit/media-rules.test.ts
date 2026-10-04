@@ -57,3 +57,12 @@ describe('validateAlt', () => {
     expect(call(value)).toBe('Descreva a imagem: o texto alternativo é obrigatório.')
   })
 })
+
+describe('coleção Mídia', () => {
+  it('avisa no painel o limite de 4 MB e os formatos aceitos', async () => {
+    const { Media } = await import('@/collections/Media')
+    const description = String(Media.admin?.description ?? '')
+    expect(description).toContain('4 MB')
+    expect(description).toContain('JPG, PNG, WebP ou AVIF')
+  })
+})

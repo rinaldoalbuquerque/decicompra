@@ -7,6 +7,10 @@ const webp = { format: 'webp' as const, options: { quality: 80 } }
 export const Media: CollectionConfig = {
   slug: 'media',
   labels: { singular: 'Mídia', plural: 'Mídia' },
+  admin: {
+    // A Vercel recusa envios acima de ~4,5 MB com erro genérico; avisar antes evita a surpresa
+    description: 'Envie imagens JPG, PNG, WebP ou AVIF de até 4 MB. Reduza fotos maiores antes de enviar.',
+  },
   access: { read: () => true },
   hooks: { beforeOperation: [rejectInvalidUpload] },
   fields: [
