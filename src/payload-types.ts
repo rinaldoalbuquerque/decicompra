@@ -75,6 +75,7 @@ export interface Config {
     products: Product;
     variants: Variant;
     offers: Offer;
+    redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -95,6 +96,7 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>;
     variants: VariantsSelect<false> | VariantsSelect<true>;
     offers: OffersSelect<false> | OffersSelect<true>;
+    redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -507,6 +509,21 @@ export interface Offer {
   createdAt: string;
 }
 /**
+ * Endereços antigos que levam para os novos (301). Criados automaticamente quando um slug público muda.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects".
+ */
+export interface Redirect {
+  id: number;
+  from: string;
+  to: string;
+  type: '301';
+  auto?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -561,6 +578,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'offers';
         value: number | Offer;
+      } | null)
+    | ({
+        relationTo: 'redirects';
+        value: number | Redirect;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -864,6 +885,18 @@ export interface OffersSelect<T extends boolean = true> {
   status?: T;
   notes?: T;
   title?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects_select".
+ */
+export interface RedirectsSelect<T extends boolean = true> {
+  from?: T;
+  to?: T;
+  type?: T;
+  auto?: T;
   updatedAt?: T;
   createdAt?: T;
 }

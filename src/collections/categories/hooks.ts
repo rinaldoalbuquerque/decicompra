@@ -3,8 +3,10 @@ import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionB
 
 import { validateCriteria, type Criterion } from '../../catalog/score'
 import { validateSpecTemplate, type SpecAttribute } from '../../catalog/spec-template'
+import { categoryPath } from '../../content/paths'
 import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
+import { applySlugRedirect } from '../redirects/apply'
 
 export const validateCategory: CollectionBeforeChangeHook = async ({ data, originalDoc, operation, req }) => {
   const errors: { message: string; path: string }[] = []
@@ -93,6 +95,24 @@ export const resyncSubcategoryProducts: CollectionAfterChangeHook = async ({ doc
         req.payload.update({ collection: 'variants', id: variant.id, data: {}, req }),
       )
     }
+  }
+  return doc
+}
+
+// Endereços públicos de categorias e subcategorias acompanham a mudança de slug (spec §3.2)
+export const redirectCategorySlug: CollectionAfterChangeHook = async ({ doc, previousDoc, operation, req }) => {
+  if (operation !== 'update' || !previousDoc?.slug || previousDoc.slug === doc.slug || !previousDoc.active) return doc
+  const parentId = relId(doc.parent)
+  if (parentId !== null) {
+    const parent = await req.payload.findByID({ collection: 'categories', id: parentId, depth: 0, req })
+    await applySlugRedirect(req, categoryPath(previousDoc.slug, parent.slug), categoryPath(doc.slug, parent.slug))
+    return doc
+  }
+  await applySlugRedirect(req, categoryPath(previousDoc.slug), categoryPath(doc.slug))
+  const children = await req.payload.find({ collection: 'categories', where: { parent: { equals: doc.id } }, depth: 0, limit: 1000, req })
+  for (const child of children.docs) {
+    if (!child.slug) continue
+    await applySlugRedirect(req, categoryPath(child.slug, previousDoc.slug), categoryPath(child.slug, doc.slug))
   }
   return doc
 }

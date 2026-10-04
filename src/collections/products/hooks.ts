@@ -7,7 +7,9 @@ import { computeFinalScore, syncScoreRows, type ScoreRow } from '../../catalog/s
 import { missingRequiredSpecs, normalizeSpecRows, specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
 import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
+import { productPath } from '../../content/paths'
 import { loadSubcategoryRules } from '../catalog-rules'
+import { applySlugRedirect } from '../redirects/apply'
 
 const count = (value: unknown) => (Array.isArray(value) ? value.length : 0)
 
@@ -77,6 +79,10 @@ export const afterProductChange: CollectionAfterChangeHook = async ({ doc, previ
   if (renamed || moved) {
     const { docs } = await req.payload.find({ collection: 'variants', where: { product: { equals: doc.id } }, depth: 0, limit: 1000, req })
     for (const variant of docs) await req.payload.update({ collection: 'variants', id: variant.id, data: {}, req })
+  }
+  // Endereço público mudou: o antigo passa a redirecionar (spec §3.2)
+  if (previousDoc?.slug && previousDoc.slug !== doc.slug && previousDoc.status !== 'rascunho') {
+    await applySlugRedirect(req, productPath(previousDoc.slug), productPath(doc.slug))
   }
   return doc
 }
