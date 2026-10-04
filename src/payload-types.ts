@@ -145,6 +145,8 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Envie imagens JPG, PNG, WebP ou AVIF de até 4 MB. Reduza fotos maiores antes de enviar.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
