@@ -1,3 +1,5 @@
+import { isHttpsUrl } from './url'
+
 export type R2Config = {
   bucket: string
   endpoint: string
@@ -54,14 +56,6 @@ function readR2(source: EnvSource): R2Config | null {
     }
   }
   return { ...config, publicUrl: config.publicUrl.replace(/\/+$/, '') }
-}
-
-function isHttpsUrl(value: string): boolean {
-  try {
-    return new URL(value).protocol === 'https:'
-  } catch {
-    return false
-  }
 }
 
 // Lê e valida a configuração do ambiente; falha cedo com mensagem clara
