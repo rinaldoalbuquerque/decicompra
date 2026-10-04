@@ -40,3 +40,10 @@ node scripts/with-env.mjs .env.producao.local pnpm payload migrate:status
 ```
 Mostra o banco de destino antes de rodar. Use com cuidado: em produção, os comandos gravam dados reais.
 Nunca chame o arquivo de produção de `.env.production.local`: o Next carregaria esse arquivo sozinho no `next start`.
+
+## Dados de demonstração (só desenvolvimento)
+
+```bash
+pnpm seed:demo
+```
+Cria 3 TVs, ofertas e um conteúdo de cada tipo (slugs `demo-…`) para ver as páginas funcionando. Recusa o banco de produção.

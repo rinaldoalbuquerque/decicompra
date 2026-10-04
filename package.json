@@ -16,6 +16,7 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed.ts",
     "seed:taxonomia": "pnpm seed",
+    "seed:demo": "cross-env DEMO_SEED=1 NODE_OPTIONS=--no-deprecation payload run scripts/seed-demo.ts",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "typecheck": "tsc --noEmit",
     "test": "pnpm test:unit && pnpm test:int && pnpm test:e2e",

@@ -56,6 +56,9 @@ jobs:
       - name: Testes de integração
         run: pnpm test:int
 
+      - name: Dados de demonstração (para os testes de navegador)
+        run: pnpm seed:demo
+
       - name: Build
         run: pnpm build
 
