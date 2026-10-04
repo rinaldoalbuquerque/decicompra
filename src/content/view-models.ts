@@ -85,7 +85,7 @@ export function variantOffers(variant: { id: number; label: string }, offers: Of
     unavailable: range.kind === 'unavailable',
     offers: usable.map((offer) => {
       const store = storeOf(offer)!
-      return { id: offer.id, storeId: store.id, storeName: store.name, href: `/ir/${offer.id}` }
+      return { id: offer.id, storeId: store.id, storeName: store.name, href: `/ir/${offer.id}/` }
     }),
   }
 }

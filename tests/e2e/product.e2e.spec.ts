@@ -11,7 +11,7 @@ test.describe('Página de produto', () => {
     const box = page.locator('#onde-comprar')
     await expect(box.getByRole('heading', { name: 'Onde comprar' })).toBeVisible()
     const store = box.getByRole('link', { name: 'Ver na Loja Demo A' }).first()
-    await expect(store).toHaveAttribute('href', /^\/ir\/\d+$/)
+    await expect(store).toHaveAttribute('href', /^\/ir\/\d+\/$/)
     await expect(store).toHaveAttribute('rel', 'sponsored nofollow noopener')
     await expect(box).toContainText('Podemos receber comissão')
     await expect(box).toContainText('R$')

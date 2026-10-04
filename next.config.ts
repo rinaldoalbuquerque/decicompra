@@ -7,6 +7,8 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // URLs canônicas terminam em barra (spec §5); o Payload lê esta opção para montar as URLs do painel
+  trailingSlash: true,
   images: {
     localPatterns: [
       {

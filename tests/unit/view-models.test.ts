@@ -65,7 +65,7 @@ describe('variantOffers', () => {
       now,
     )
     expect(plain(result.priceText)).toBe('R$ 4.300 – R$ 4.600 · verificado em 01/10/2026')
-    expect(result.offers).toEqual([{ id: 10, storeId: 1, storeName: 'Loja A', href: '/ir/10' }])
+    expect(result.offers).toEqual([{ id: 10, storeId: 1, storeName: 'Loja A', href: '/ir/10/' }])
     expect(result.stale).toBe(false)
     expect(result.unavailable).toBe(false)
   })

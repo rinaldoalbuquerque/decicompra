@@ -49,3 +49,12 @@ test('painel administrativo carrega', async ({ page }) => {
   expect(response?.status()).toBeLessThan(400)
   await expect(page.locator('input[name="email"]')).toBeVisible({ timeout: 90_000 })
 })
+
+test('URLs públicas terminam em barra e o painel continua abrindo', async ({ page, request }) => {
+  const response = await request.get('/produtos/demo-tv-alfa', { maxRedirects: 0 })
+  expect(response.status()).toBe(308)
+  expect(response.headers()['location']).toBe('/produtos/demo-tv-alfa/')
+
+  await page.goto('/admin')
+  await expect(page.getByRole('textbox', { name: /e-?mail/i })).toBeVisible()
+})
