@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    categories: Category;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +79,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -205,6 +207,74 @@ export interface Media {
   };
 }
 /**
+ * Categorias (1º nível) e subcategorias (2º nível). Especificações e critérios de nota ficam nas subcategorias.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  /**
+   * Gerado a partir do nome se ficar vazio. Só letras minúsculas, números e hífens.
+   */
+  slug: string;
+  /**
+   * Vazio = categoria de 1º nível. Preenchido = subcategoria.
+   */
+  parent?: (number | null) | Category;
+  order?: number | null;
+  active?: boolean | null;
+  isAnchor?: boolean | null;
+  description?: string | null;
+  /**
+   * Um emoji (ex.: 📺) ou nome de ícone.
+   */
+  icon?: string | null;
+  /**
+   * Campos que todo produto desta subcategoria terá. A chave não deve mudar depois de criada.
+   */
+  specTemplate?:
+    | {
+        /**
+         * ex.: taxa_atualizacao
+         */
+        key: string;
+        label: string;
+        type: 'number' | 'text' | 'boolean' | 'option';
+        unit?: string | null;
+        /**
+         * ex.: Imagem
+         */
+        group?: string | null;
+        direction?: ('higher' | 'lower' | 'neutral') | null;
+        options?: string[] | null;
+        highlight?: boolean | null;
+        comparable?: boolean | null;
+        required?: boolean | null;
+        perVariant?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * A soma dos pesos precisa ser exatamente 100.
+   */
+  criteria?:
+    | {
+        /**
+         * ex.: custo_beneficio
+         */
+        key: string;
+        name: string;
+        weight: number;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -235,6 +305,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -357,6 +431,47 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  parent?: T;
+  order?: T;
+  active?: T;
+  isAnchor?: T;
+  description?: T;
+  icon?: T;
+  specTemplate?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        type?: T;
+        unit?: T;
+        group?: T;
+        direction?: T;
+        options?: T;
+        highlight?: T;
+        comparable?: T;
+        required?: T;
+        perVariant?: T;
+        id?: T;
+      };
+  criteria?:
+    | T
+    | {
+        key?: T;
+        name?: T;
+        weight?: T;
+        description?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

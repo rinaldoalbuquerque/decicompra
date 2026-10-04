@@ -7,6 +7,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Users } from './collections/Users'
 import { readEnv } from './lib/env'
@@ -22,7 +23,7 @@ export default buildConfig({
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' · DeciCompra' },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Categories],
   editor: lexicalEditor(),
   graphQL: { disable: true },
   i18n: { fallbackLanguage: 'pt', supportedLanguages: { pt } },
