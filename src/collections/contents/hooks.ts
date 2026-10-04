@@ -27,6 +27,9 @@ export const prepareContent: CollectionBeforeChangeHook = async ({ data, origina
   const status = get<ContentStatus>('status') ?? 'rascunho'
   // Na criação o Payload também passa originalDoc (sem id)
   const existingId = operation === 'update' ? relId(originalDoc?.id) : null
+  // Limpeza ao apagar um produto: nunca falha; o que deixaria de valer vai para revisão
+  const cleanup = Boolean(context.productCleanup)
+  let needsReview = false
 
   if (type === 'comparativo') {
     const ids = (get<unknown[]>('comparedProducts') ?? []).map(relId).filter((id): id is number | string => id !== null)
@@ -57,7 +60,14 @@ export const prepareContent: CollectionBeforeChangeHook = async ({ data, origina
           req,
         })
         if (duplicates.totalDocs > 0) {
-          errors.push({ path: 'comparedProducts', message: 'Já existe um comparativo com estes produtos.' })
+          if (cleanup) {
+            // Mantém o endereço atual (o canônico já pertence ao outro comparativo) e manda para revisão
+            data.slug = originalDoc?.slug
+            data.productSetKey = null
+            needsReview = true
+          } else {
+            errors.push({ path: 'comparedProducts', message: 'Já existe um comparativo com estes produtos.' })
+          }
         }
       }
     } else {
@@ -79,7 +89,10 @@ export const prepareContent: CollectionBeforeChangeHook = async ({ data, origina
 
   const publishAt = get<string | null>('publishAt')
   if (status === 'publicado' && !publishAt) data.publishAt = new Date().toISOString()
-  if (status === 'agendado' && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
+  // Data futura só é exigida ao agendar (mudança de status ou de data), não em toda edição
+  const time = (value: unknown) => (value ? new Date(String(value)).getTime() : null)
+  const scheduling = status === 'agendado' && (originalDoc?.status !== 'agendado' || time(publishAt) !== time(originalDoc?.publishAt))
+  if (scheduling && !context.skipPublicationCheck && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
     errors.push({ path: 'publishAt', message: 'Para agendar, informe uma data de publicação no futuro.' })
   }
 
@@ -104,10 +117,9 @@ export const prepareContent: CollectionBeforeChangeHook = async ({ data, origina
     specOverrides: get('specOverrides'),
   })
 
-  if (!context.skipPublicationCheck) {
+  if (!context.skipPublicationCheck || cleanup) {
     const seo = get<{ metaDescription?: string | null }>('seo')
-    errors.push(
-      ...checkContentPublication({
+    const missing = checkContentPublication({
         type,
         status,
         summary: get<string>('summary'),
@@ -116,9 +128,12 @@ export const prepareContent: CollectionBeforeChangeHook = async ({ data, origina
         reviewedAt: get<string>('reviewedAt'),
         picksCount: count(get('picks')),
         comparedCount: count(get('comparedProducts')),
-      }).map((message) => ({ path: 'status', message })),
-    )
+    })
+    if (cleanup) needsReview ||= missing.length > 0
+    else errors.push(...missing.map((message) => ({ path: 'status', message })))
   }
+
+  if (needsReview && PUBLIC_STATUSES.includes(status)) data.status = 'em_revisao'
 
   if (errors.length > 0) throw new ValidationError({ collection: 'contents', errors })
   return data
@@ -155,8 +170,24 @@ export async function detachProductFromContents(req: PayloadRequest, productId: 
       },
       Number(productId),
     )
-    await withContext(req, { skipPublicationCheck: true }, () =>
+    await withContext(req, { skipPublicationCheck: true, productCleanup: true }, () =>
       req.payload.update({ collection: 'contents', id: content.id, data: cleaned as never, req }),
+    )
+  }
+}
+
+// Slug de produto mudou: comparativos que o citam recalculam o endereço canônico (e o redirecionamento)
+export async function refreshComparisonsOf(req: PayloadRequest, productId: number | string): Promise<void> {
+  const { docs } = await req.payload.find({
+    collection: 'contents',
+    where: { and: [{ type: { equals: 'comparativo' } }, { comparedProducts: { in: [productId] } }] },
+    depth: 0,
+    limit: 10_000,
+    req,
+  })
+  for (const content of docs) {
+    await withContext(req, { skipPublicationCheck: true }, () =>
+      req.payload.update({ collection: 'contents', id: content.id, data: {}, req }),
     )
   }
 }

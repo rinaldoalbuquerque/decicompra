@@ -9,7 +9,7 @@ import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { productPath } from '../../content/paths'
 import { loadSubcategoryRules } from '../catalog-rules'
-import { detachProductFromContents } from '../contents/hooks'
+import { detachProductFromContents, refreshComparisonsOf } from '../contents/hooks'
 import { applySlugRedirect } from '../redirects/apply'
 
 const count = (value: unknown) => (Array.isArray(value) ? value.length : 0)
@@ -85,6 +85,7 @@ export const afterProductChange: CollectionAfterChangeHook = async ({ doc, previ
   if (previousDoc?.slug && previousDoc.slug !== doc.slug && previousDoc.status !== 'rascunho') {
     await applySlugRedirect(req, productPath(previousDoc.slug), productPath(doc.slug))
   }
+  if (previousDoc?.slug && previousDoc.slug !== doc.slug) await refreshComparisonsOf(req, doc.id)
   return doc
 }
 

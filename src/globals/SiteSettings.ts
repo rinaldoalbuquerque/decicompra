@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
-import { adminOnly, anyone } from '../access'
+import { adminOnly, anyone, loggedInField } from '../access'
+import { revalidateSiteLayout } from './revalidate'
 
 const linkFields = [
   {
@@ -18,6 +19,7 @@ export const SiteSettings: GlobalConfig = {
   label: 'Configurações do site',
   admin: { group: 'Configurações' },
   access: { read: anyone, update: adminOnly },
+  hooks: { afterChange: [revalidateSiteLayout] },
   fields: [
     {
       type: 'tabs',
@@ -88,7 +90,12 @@ export const SiteSettings: GlobalConfig = {
           label: 'Medição e contato',
           fields: [
             { name: 'ga4Id', label: 'ID do Google Analytics 4', type: 'text', admin: { description: 'ex.: G-XXXXXXXXXX' } },
-            { name: 'contactEmail', label: 'E-mail que recebe o formulário de contato', type: 'email' },
+            {
+              name: 'contactEmail',
+              label: 'E-mail que recebe o formulário de contato',
+              type: 'email',
+              access: { read: loggedInField },
+            },
           ],
         },
       ],

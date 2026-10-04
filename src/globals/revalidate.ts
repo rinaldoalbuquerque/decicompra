@@ -1,0 +1,13 @@
+import type { GlobalAfterChangeHook } from 'payload'
+
+// Menu e rodapé aparecem em todas as páginas: ao salvar, as páginas geradas são refeitas.
+// Fora de uma requisição do Next (scripts, testes) não há cache a invalidar, então o erro é ignorado.
+export const revalidateSiteLayout: GlobalAfterChangeHook = async ({ doc }) => {
+  try {
+    const { revalidatePath } = await import('next/cache')
+    revalidatePath('/', 'layout')
+  } catch {
+    // sem contexto do Next
+  }
+  return doc
+}

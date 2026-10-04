@@ -42,7 +42,8 @@ export default buildConfig({
   secret: env.payloadSecret,
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
-    pool: { connectionString: env.databaseUrl },
+    // Tempo limite: banco fora do ar falha rápido em vez de travar o build ou a página
+    pool: { connectionString: env.databaseUrl, connectionTimeoutMillis: 10_000 },
     push: false,
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
