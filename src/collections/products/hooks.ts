@@ -5,6 +5,7 @@ import { roleOf } from '../../access'
 import { checkProductPublication, type ProductStatus } from '../../catalog/product-status'
 import { computeFinalScore, syncScoreRows, type ScoreRow } from '../../catalog/score'
 import { missingRequiredSpecs, specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
+import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { loadSubcategoryRules } from '../catalog-rules'
 
@@ -78,5 +79,6 @@ export const afterProductChange: CollectionAfterChangeHook = async ({ doc, previ
 }
 
 export const cascadeProductDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
-  await req.payload.delete({ collection: 'variants', where: { product: { equals: id } }, req, context: { cascade: true } })
+  await withContext(req, { cascade: true }, () => req.payload.delete({ collection: 'offers', where: { product: { equals: id } }, req }))
+  await withContext(req, { cascade: true }, () => req.payload.delete({ collection: 'variants', where: { product: { equals: id } }, req }))
 }

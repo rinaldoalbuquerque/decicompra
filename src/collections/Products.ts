@@ -70,6 +70,7 @@ export const Products: CollectionConfig = {
               admin: { description: 'A primeira é a principal.' },
             },
             { name: 'variants', label: 'Variantes', type: 'join', collection: 'variants', on: 'product' },
+            { name: 'offers', label: 'Ofertas', type: 'join', collection: 'offers', on: 'product' },
             {
               name: 'specs',
               label: 'Especificações',

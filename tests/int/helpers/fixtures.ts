@@ -132,3 +132,33 @@ export const ANALYSIS_DATA = {
   sources: [{ title: 'Ficha técnica oficial', url: 'https://www.lg.com/br' }],
   reviewedAt: '2026-10-03T12:00:00.000Z',
 }
+
+export async function createOffer(
+  payload: Payload,
+  tracker: Tracker,
+  refs: {
+    productId: number
+    variantId: number
+    storeId: number
+    data?: Partial<{ status: 'active' | 'unavailable'; affiliateUrl: string; priceMin: number; priceMax: number }>
+  },
+) {
+  return tracker.add(
+    'offers',
+    await payload.create({
+      collection: 'offers',
+      data: {
+        product: refs.productId,
+        variant: refs.variantId,
+        store: refs.storeId,
+        url: 'https://www.loja.com.br/produto',
+        affiliateUrl: 'https://www.loja.com.br/produto?tag=decicompra-20',
+        priceMin: 4300,
+        priceMax: 4600,
+        verifiedAt: new Date().toISOString(),
+        status: 'active',
+        ...refs.data,
+      },
+    }),
+  )
+}

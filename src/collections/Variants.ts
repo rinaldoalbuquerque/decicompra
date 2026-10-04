@@ -1,7 +1,14 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOrEditor, anyone, loggedIn } from '../access'
-import { guardVariantDelete, prepareVariant, promoteReference, syncReference } from './variants/hooks'
+import {
+  deleteVariantOffers,
+  guardVariantDelete,
+  prepareVariant,
+  promoteReference,
+  refreshOfferTitles,
+  syncReference,
+} from './variants/hooks'
 
 export const Variants: CollectionConfig = {
   slug: 'variants',
@@ -10,8 +17,8 @@ export const Variants: CollectionConfig = {
   access: { read: anyone, create: loggedIn, update: loggedIn, delete: adminOrEditor },
   hooks: {
     beforeChange: [prepareVariant],
-    afterChange: [syncReference],
-    beforeDelete: [guardVariantDelete],
+    afterChange: [syncReference, refreshOfferTitles],
+    beforeDelete: [guardVariantDelete, deleteVariantOffers],
     afterDelete: [promoteReference],
   },
   fields: [

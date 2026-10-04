@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 import { Brands } from './collections/Brands'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
+import { Offers } from './collections/Offers'
 import { Products } from './collections/Products'
 import { Stores } from './collections/Stores'
 import { Users } from './collections/Users'
@@ -27,7 +28,7 @@ export default buildConfig({
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' · DeciCompra' },
   },
-  collections: [Users, Media, Categories, Brands, Stores, Products, Variants],
+  collections: [Users, Media, Categories, Brands, Stores, Products, Variants, Offers],
   editor: lexicalEditor(),
   graphQL: { disable: true },
   i18n: { fallbackLanguage: 'pt', supportedLanguages: { pt } },

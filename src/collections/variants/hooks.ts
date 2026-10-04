@@ -7,8 +7,10 @@ import type {
 } from 'payload'
 
 import { specValueErrors, syncSpecRows, type SpecRow } from '../../catalog/spec-template'
+import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { loadSubcategoryRules } from '../catalog-rules'
+import { refreshHasActiveOffer } from '../offers/hooks'
 
 export const prepareVariant: CollectionBeforeChangeHook = async ({ data, originalDoc, operation, req }) => {
   const productId = relId(pick(data, originalDoc, 'product'))
@@ -56,12 +58,12 @@ export const syncReference: CollectionAfterChangeHook = async ({ doc, req, conte
   ).docs
   if (doc.isReference) {
     for (const sibling of siblings.filter((s) => s.isReference)) {
-      await req.payload.update({ collection: 'variants', id: sibling.id, data: { isReference: false }, req, context: { skipReferenceSync: true } })
+      await withContext(req, { skipReferenceSync: true }, () => req.payload.update({ collection: 'variants', id: sibling.id, data: { isReference: false }, req }))
     }
     return doc
   }
   if (!siblings.some((s) => s.isReference)) {
-    await req.payload.update({ collection: 'variants', id: doc.id, data: { isReference: true }, req, context: { skipReferenceSync: true } })
+    await withContext(req, { skipReferenceSync: true }, () => req.payload.update({ collection: 'variants', id: doc.id, data: { isReference: true }, req }))
     return { ...doc, isReference: true }
   }
   return doc
@@ -95,6 +97,22 @@ export const promoteReference: CollectionAfterDeleteHook = async ({ doc, req, co
     req,
   })
   if (docs[0]) {
-    await req.payload.update({ collection: 'variants', id: docs[0].id, data: { isReference: true }, req, context: { skipReferenceSync: true } })
+    await withContext(req, { skipReferenceSync: true }, () => req.payload.update({ collection: 'variants', id: docs[0].id, data: { isReference: true }, req }))
   }
+}
+
+// Ofertas mostram o título da variante; mantê-lo em dia
+export const refreshOfferTitles: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
+  if (previousDoc?.title === doc.title) return doc
+  const { docs } = await req.payload.find({ collection: 'offers', where: { variant: { equals: doc.id } }, depth: 0, limit: 1000, req })
+  for (const offer of docs) await req.payload.update({ collection: 'offers', id: offer.id, data: {}, req })
+  return doc
+}
+
+// Roda antes de apagar: a coluna variant das ofertas é obrigatória e o banco não aceita deixá-la vazia
+export const deleteVariantOffers: CollectionBeforeDeleteHook = async ({ id, req, context }) => {
+  if (context.cascade) return
+  const variant = await req.payload.findByID({ collection: 'variants', id, depth: 0, req })
+  await withContext(req, { cascade: true }, () => req.payload.delete({ collection: 'offers', where: { variant: { equals: id } }, req }))
+  await refreshHasActiveOffer(req, relId(variant.product))
 }

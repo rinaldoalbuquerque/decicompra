@@ -74,6 +74,7 @@ export interface Config {
     stores: Store;
     products: Product;
     variants: Variant;
+    offers: Offer;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsJoins: {
     products: {
       variants: 'variants';
+      offers: 'offers';
     };
   };
   collectionsSelect: {
@@ -92,6 +94,7 @@ export interface Config {
     stores: StoresSelect<false> | StoresSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     variants: VariantsSelect<false> | VariantsSelect<true>;
+    offers: OffersSelect<false> | OffersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -360,6 +363,11 @@ export interface Product {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  offers?: {
+    docs?: (number | Offer)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
    * As linhas vêm do modelo da subcategoria. Salve para atualizar a lista.
    */
@@ -474,6 +482,31 @@ export interface Variant {
   createdAt: string;
 }
 /**
+ * Único lugar onde links e preços são editados. Os botões do site usam /ir/{id}.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offers".
+ */
+export interface Offer {
+  id: number;
+  product: number | Product;
+  variant: number | Variant;
+  store: number | Store;
+  url: string;
+  /**
+   * Destino real do botão. Trocar aqui vale na hora em todo o site.
+   */
+  affiliateUrl: string;
+  priceMin: number;
+  priceMax: number;
+  verifiedAt: string;
+  status: 'active' | 'unavailable';
+  notes?: string | null;
+  title?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -524,6 +557,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'variants';
         value: number | Variant;
+      } | null)
+    | ({
+        relationTo: 'offers';
+        value: number | Offer;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -731,6 +768,7 @@ export interface ProductsSelect<T extends boolean = true> {
   subcategory?: T;
   images?: T;
   variants?: T;
+  offers?: T;
   specs?:
     | T
     | {
@@ -806,6 +844,25 @@ export interface VariantsSelect<T extends boolean = true> {
         value?: T;
         id?: T;
       };
+  title?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offers_select".
+ */
+export interface OffersSelect<T extends boolean = true> {
+  product?: T;
+  variant?: T;
+  store?: T;
+  url?: T;
+  affiliateUrl?: T;
+  priceMin?: T;
+  priceMax?: T;
+  verifiedAt?: T;
+  status?: T;
+  notes?: T;
   title?: T;
   updatedAt?: T;
   createdAt?: T;
