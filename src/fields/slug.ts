@@ -12,7 +12,7 @@ export function slugField(source = 'name'): TextField {
     name: 'slug',
     label: 'Slug (endereço)',
     type: 'text',
-    required: true,
+    // Não é 'required' no esquema porque o hook o gera a partir do nome; o validador recusa vazio
     unique: true,
     index: true,
     validate: validateSlug,

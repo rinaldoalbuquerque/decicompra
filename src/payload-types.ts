@@ -218,7 +218,7 @@ export interface Category {
   /**
    * Gerado a partir do nome se ficar vazio. Só letras minúsculas, números e hífens.
    */
-  slug: string;
+  slug?: string | null;
   /**
    * Vazio = categoria de 1º nível. Preenchido = subcategoria.
    */
