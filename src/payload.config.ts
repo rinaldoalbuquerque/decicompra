@@ -18,6 +18,8 @@ import { Redirects } from './collections/Redirects'
 import { Stores } from './collections/Stores'
 import { Users } from './collections/Users'
 import { Variants } from './collections/Variants'
+import { HomePage } from './globals/HomePage'
+import { SiteSettings } from './globals/SiteSettings'
 import { readEnv } from './lib/env'
 import { buildMediaURL } from './lib/media-url'
 
@@ -33,6 +35,7 @@ export default buildConfig({
     components: { beforeDashboard: ['/components/admin/MaintenancePanel#MaintenancePanel'] },
   },
   collections: [Users, Media, Categories, Brands, Stores, Products, Variants, Offers, Redirects, Authors, Contents],
+  globals: [SiteSettings, HomePage],
   editor: lexicalEditor(),
   graphQL: { disable: true },
   i18n: { fallbackLanguage: 'pt', supportedLanguages: { pt } },

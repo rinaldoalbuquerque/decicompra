@@ -110,8 +110,14 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'site-settings': SiteSetting;
+    'home-page': HomePage;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -1184,6 +1190,153 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * Vazio: usa o menu padrão (Categorias, Melhores, Comparativos, Guias, Entenda).
+   */
+  mainNav?:
+    | {
+        label: string;
+        /**
+         * ex.: /guias/
+         */
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Vazio: usa o rodapé padrão.
+   */
+  footerColumns?:
+    | {
+        title: string;
+        links?:
+          | {
+              label: string;
+              /**
+               * ex.: /guias/
+               */
+              href: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  affiliateNotice: string;
+  /**
+   * Ligue só depois da aprovação do AdSense.
+   */
+  adsEnabled?: boolean | null;
+  /**
+   * ex.: ca-pub-0000000000000000
+   */
+  adsenseClientId?: string | null;
+  adSlots?:
+    | {
+        placement: 'home' | 'content' | 'sidebar';
+        slotId: string;
+        id?: string | null;
+      }[]
+    | null;
+  adsTxt?: string | null;
+  /**
+   * ex.: G-XXXXXXXXXX
+   */
+  ga4Id?: string | null;
+  contactEmail?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  searchChips?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  subcategoryCards?: (number | Category)[] | null;
+  featuredComparisons?: (number | Content)[] | null;
+  featuredBest?: (number | Content)[] | null;
+  featuredGuides?: (number | Content)[] | null;
+  featuredExplainers?: (number | Content)[] | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  mainNav?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  footerColumns?:
+    | T
+    | {
+        title?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  affiliateNotice?: T;
+  adsEnabled?: T;
+  adsenseClientId?: T;
+  adSlots?:
+    | T
+    | {
+        placement?: T;
+        slotId?: T;
+        id?: T;
+      };
+  adsTxt?: T;
+  ga4Id?: T;
+  contactEmail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  searchChips?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  subcategoryCards?: T;
+  featuredComparisons?: T;
+  featuredBest?: T;
+  featuredGuides?: T;
+  featuredExplainers?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

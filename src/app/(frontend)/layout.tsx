@@ -4,6 +4,7 @@ import React from 'react'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { inter, manrope } from '@/design/fonts'
+import { getSiteNavigation } from '@/lib/site-navigation'
 
 import './globals.css'
 
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const navigation = await getSiteNavigation()
   return (
     <html lang="pt-BR" className={`${inter.variable} ${manrope.variable}`}>
       <body className="flex min-h-screen flex-col bg-branco text-texto antialiased">
@@ -24,11 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Pular para o conteúdo
         </a>
-        <SiteHeader />
+        <SiteHeader links={navigation.mainNav} />
         <main id="conteudo" className="flex-1">
           {children}
         </main>
-        <SiteFooter />
+        <SiteFooter columns={navigation.footerColumns} />
       </body>
     </html>
   )

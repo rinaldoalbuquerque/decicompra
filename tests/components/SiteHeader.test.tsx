@@ -28,4 +28,10 @@ describe('SiteHeader', () => {
     render(<SiteHeader />)
     expect(screen.getByRole('banner').classList.contains('superficie-escura')).toBe(true)
   })
+
+  it('usa os links configurados no painel quando recebidos', () => {
+    render(<SiteHeader links={[{ label: 'Ofertas', href: '/ofertas/' }]} />)
+    const nav = screen.getByRole('navigation', { name: 'Principal' })
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Ofertas'])
+  })
 })

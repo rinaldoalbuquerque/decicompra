@@ -51,3 +51,25 @@ export const footerColumns: FooterColumn[] = [
     ],
   },
 ]
+
+type NavigationSettings = {
+  mainNav?: { label?: string | null; href?: string | null }[] | null
+  footerColumns?: { title?: string | null; links?: { label?: string | null; href?: string | null }[] | null }[] | null
+} | null
+
+const validLinks = (links: { label?: string | null; href?: string | null }[] | null | undefined): NavLink[] =>
+  (links ?? [])
+    .filter((link) => link.label?.trim() && link.href?.trim())
+    .map((link) => ({ label: link.label!.trim(), href: link.href!.trim() }))
+
+// Menu e rodapé editados no painel (spec §4.11); o que não foi configurado usa o padrão
+export function resolveNavigation(settings: NavigationSettings): { mainNav: NavLink[]; footerColumns: FooterColumn[] } {
+  const configuredNav = validLinks(settings?.mainNav)
+  const configuredColumns = (settings?.footerColumns ?? [])
+    .map((column) => ({ title: column.title?.trim() ?? '', links: validLinks(column.links) }))
+    .filter((column) => column.title && column.links.length > 0)
+  return {
+    mainNav: configuredNav.length > 0 ? configuredNav : mainNav,
+    footerColumns: configuredColumns.length > 0 ? configuredColumns : footerColumns,
+  }
+}

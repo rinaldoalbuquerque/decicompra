@@ -30,4 +30,10 @@ describe('SiteFooter', () => {
     render(<SiteFooter year={2026} />)
     expect(screen.getByRole('contentinfo').classList.contains('superficie-escura')).toBe(true)
   })
+
+  it('usa as colunas configuradas no painel quando recebidas', () => {
+    render(<SiteFooter year={2026} columns={[{ title: 'Ajuda', links: [{ label: 'Contato', href: '/contato/' }] }]} />)
+    expect(screen.getByRole('navigation', { name: 'Ajuda' })).toBeDefined()
+    expect(screen.queryByRole('navigation', { name: 'Categorias' })).toBeNull()
+  })
 })

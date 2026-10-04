@@ -10,6 +10,7 @@ import * as migration_20261004_123906_redirects from './20261004_123906_redirect
 import * as migration_20261004_124229_authors from './20261004_124229_authors';
 import * as migration_20261004_124804_contents from './20261004_124804_contents';
 import * as migration_20261004_124910_content_product_nullable from './20261004_124910_content_product_nullable';
+import * as migration_20261004_125434_globals from './20261004_125434_globals';
 
 export const migrations = [
   {
@@ -70,6 +71,11 @@ export const migrations = [
   {
     up: migration_20261004_124910_content_product_nullable.up,
     down: migration_20261004_124910_content_product_nullable.down,
-    name: '20261004_124910_content_product_nullable'
+    name: '20261004_124910_content_product_nullable',
+  },
+  {
+    up: migration_20261004_125434_globals.up,
+    down: migration_20261004_125434_globals.down,
+    name: '20261004_125434_globals'
   },
 ];
