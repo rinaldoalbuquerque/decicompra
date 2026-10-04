@@ -19,8 +19,8 @@ const variant = (o: Partial<VariantOffers> = {}): VariantOffers => ({
   stale: false,
   unavailable: false,
   offers: [
-    { id: 10, storeName: 'Loja A', href: '/ir/10' },
-    { id: 11, storeName: 'Loja B', href: '/ir/11' },
+    { id: 10, storeId: 1, storeName: 'Loja A', href: '/ir/10' },
+    { id: 11, storeId: 2, storeName: 'Loja B', href: '/ir/11' },
   ],
   ...o,
 })

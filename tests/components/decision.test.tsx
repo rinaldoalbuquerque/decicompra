@@ -6,7 +6,7 @@ import { MobileDecisionBar } from '@/components/site/MobileDecisionBar'
 import type { VariantOffers } from '@/content/view-models'
 
 const variants: VariantOffers[] = [
-  { variantId: 1, label: '55"', priceText: 'R$ 4.300 – R$ 4.600 · verificado em 01/10/2026', stale: false, unavailable: false, offers: [{ id: 10, storeName: 'Loja A', href: '/ir/10' }] },
+  { variantId: 1, label: '55"', priceText: 'R$ 4.300 – R$ 4.600 · verificado em 01/10/2026', stale: false, unavailable: false, offers: [{ id: 10, storeId: 1, storeName: 'Loja A', href: '/ir/10' }] },
   { variantId: 2, label: '65"', priceText: 'Indisponível no momento', stale: false, unavailable: true, offers: [] },
 ]
 

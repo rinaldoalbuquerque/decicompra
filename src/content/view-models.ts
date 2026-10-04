@@ -5,7 +5,7 @@ import { relId } from '../lib/relations'
 // Conversões dos documentos do Payload para o que as páginas mostram
 
 export type ImageSet = { src: string; srcSet: string; alt: string; width: number; height: number }
-export type OfferLink = { id: number; storeName: string; href: string }
+export type OfferLink = { id: number; storeId: number | null; storeName: string; href: string }
 export type VariantOffers = {
   variantId: number
   label: string
@@ -65,10 +65,10 @@ export function toImageSet(media: unknown): ImageSet | null {
   }
 }
 
-function storeOf(offer: OfferDoc): { name: string; active: boolean } | null {
+function storeOf(offer: OfferDoc): { id: number | null; name: string; active: boolean } | null {
   if (!offer.store || typeof offer.store !== 'object') return null
-  const store = offer.store as { name?: string; active?: boolean | null }
-  return { name: store.name ?? 'Loja', active: store.active !== false }
+  const store = offer.store as { id?: number; name?: string; active?: boolean | null }
+  return { id: store.id ?? null, name: store.name ?? 'Loja', active: store.active !== false }
 }
 
 // Faixa de preço e botões de uma variante (spec §5.2): só ofertas ativas de lojas ativas
@@ -83,7 +83,10 @@ export function variantOffers(variant: { id: number; label: string }, offers: Of
     priceText: formatPriceRange(range),
     stale: range.kind === 'stale',
     unavailable: range.kind === 'unavailable',
-    offers: usable.map((offer) => ({ id: offer.id, storeName: storeOf(offer)!.name, href: `/ir/${offer.id}` })),
+    offers: usable.map((offer) => {
+      const store = storeOf(offer)!
+      return { id: offer.id, storeId: store.id, storeName: store.name, href: `/ir/${offer.id}` }
+    }),
   }
 }
 
