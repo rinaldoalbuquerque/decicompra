@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import type { Criterion } from '@/catalog/score'
-import type { SpecAttribute } from '@/catalog/spec-template'
+import { displaySpecValue, type SpecAttribute } from '@/catalog/spec-template'
 import { AdSlot } from '@/components/site/AdSlot'
 import { PAGE_CONTAINER, PageHeader, ProsCons, Section, SourcesList } from '@/components/site/blocks'
 import { PriceRange } from '@/components/site/PriceRange'
@@ -156,7 +156,7 @@ export default async function BestPage({ params }: Params) {
                         <td className="p-2">{summary.scoreText ?? '—'}</td>
                         {highlight.map((attr) => (
                           <td key={attr.key} className="p-2">
-                            {summary.specRows.find((row) => row.key === attr.key)?.value ?? '—'}
+                            {displaySpecValue(attr, summary.specRows.find((row) => row.key === attr.key)?.value)}
                           </td>
                         ))}
                         <td className="p-2">{variant?.stale ? 'Ver na loja' : (variant?.valuesText ?? '—')}</td>

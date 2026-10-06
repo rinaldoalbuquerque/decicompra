@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 
 import type { Criterion } from '@/catalog/score'
-import type { SpecAttribute } from '@/catalog/spec-template'
+import { displaySpecValue, type SpecAttribute } from '@/catalog/spec-template'
 import { AdSlot } from '@/components/site/AdSlot'
 import { PAGE_CONTAINER, PageHeader, Section, SourcesList } from '@/components/site/blocks'
 import { PriceRange } from '@/components/site/PriceRange'
@@ -233,7 +233,7 @@ export default async function ComparisonPage({ params }: Params) {
                 </thead>
                 <tbody>
                   {comparable.map((attr) => {
-                    const values = columns.map((column) => column.specRows.find((row) => row.key === attr.key)?.value ?? '—')
+                    const values = columns.map((column) => displaySpecValue(attr, column.specRows.find((row) => row.key === attr.key)?.value))
                     const winners = bySpec.get(attr.key) ?? []
                     return (
                       <tr key={attr.key} data-equal={values.every((value) => value === values[0]) ? 'true' : undefined} className="border-t border-slate-200">

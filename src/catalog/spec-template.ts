@@ -113,3 +113,16 @@ export function validateSpecTemplate(template: SpecAttribute[]): string[] {
   }
   return errors
 }
+
+// Valor para exibir nas páginas: número com vírgula decimal, "Sim"/"Não", vazio como travessão
+export function displaySpecValue(attr: SpecAttribute | undefined, value: string | null | undefined): string {
+  const v = value?.trim()
+  if (!v) return '—'
+  if (attr?.type === 'number' && /^-?\d+\.\d+$/.test(v)) return v.replace('.', ',')
+  if (attr?.type === 'boolean') {
+    const lower = v.toLowerCase()
+    if (lower === 'sim') return 'Sim'
+    if (lower === 'não' || lower === 'nao') return 'Não'
+  }
+  return v
+}

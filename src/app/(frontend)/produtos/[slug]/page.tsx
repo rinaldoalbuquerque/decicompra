@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import type { SpecAttribute, SpecRow } from '@/catalog/spec-template'
+import { displaySpecValue, type SpecAttribute, type SpecRow } from '@/catalog/spec-template'
 import { AdSlot } from '@/components/site/AdSlot'
 import { PAGE_CONTAINER, PageHeader, ProsCons, QuickSummary, Section, SourcesList } from '@/components/site/blocks'
 import { DecisionBox } from '@/components/site/DecisionBox'
@@ -51,8 +51,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 function groupSpecs(template: SpecAttribute[], rows: SpecRow[]) {
   const groups = new Map<string, { label: string; value: string }[]>()
   for (const attr of template.filter((item) => !item.perVariant)) {
-    const value = rows.find((row) => row.key === attr.key)?.value
-    if (!value) continue
+    const raw = rows.find((row) => row.key === attr.key)?.value
+    if (!raw) continue
+    const value = displaySpecValue(attr, raw)
     const group = attr.group || 'Geral'
     groups.set(group, [...(groups.get(group) ?? []), { label: attr.unit ? `${attr.label} (${attr.unit})` : attr.label, value }])
   }
@@ -228,7 +229,7 @@ export default async function ProductPage({ params }: Params) {
                         </th>
                         {perVariantAttrs.map((attr) => (
                           <td key={attr.key} className="p-2">
-                            {variant.specs?.find((row) => row.key === attr.key)?.value ?? '—'}
+                            {displaySpecValue(attr, variant.specs?.find((row) => row.key === attr.key)?.value)}
                           </td>
                         ))}
                       </tr>

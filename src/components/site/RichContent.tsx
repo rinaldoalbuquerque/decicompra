@@ -1,6 +1,6 @@
 import { RichText, type JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 
-import type { SpecAttribute, SpecRow } from '@/catalog/spec-template'
+import { displaySpecValue, type SpecAttribute, type SpecRow } from '@/catalog/spec-template'
 import { specWinners } from '@/content/comparison'
 import { extractHeadings, internalLinkHref, nodeText } from '@/content/rich-text'
 import { toImageSet, type ProductSummary } from '@/content/view-models'
@@ -55,7 +55,7 @@ function ComparisonTable({ ids, attributes, products, template }: { ids: number[
                 {attr.unit ? `${attr.label} (${attr.unit})` : attr.label}
               </th>
               {columns.map((column) => {
-                const value = (column.specRows ?? column.product.specs ?? []).find((row) => row.key === attr.key)?.value ?? '—'
+                const value = displaySpecValue(attr, (column.specRows ?? column.product.specs ?? []).find((row) => row.key === attr.key)?.value)
                 const isWinner = winners.get(attr.key)?.includes(column.id) ?? false
                 return (
                   <td key={column.id} data-winner={isWinner ? 'true' : undefined} className={`p-2 ${isWinner ? 'bg-green-50 font-semibold text-verde-texto' : ''}`}>

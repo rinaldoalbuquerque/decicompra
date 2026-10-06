@@ -123,3 +123,16 @@ describe('normalizeSpecValue', () => {
     expect(normalizeSpecValue(taxa, '120Hz')).toBe('120Hz')
   })
 })
+
+describe('exibição dos valores de especificação', () => {
+  it('número com vírgula decimal, sim/não com inicial maiúscula, texto como está', async () => {
+    const { displaySpecValue } = await import('@/catalog/spec-template')
+    expect(displaySpecValue({ key: 'a', label: 'A', type: 'number' }, '7.2')).toBe('7,2')
+    expect(displaySpecValue({ key: 'a', label: 'A', type: 'number' }, '1800')).toBe('1800')
+    expect(displaySpecValue({ key: 'b', label: 'B', type: 'boolean' }, 'sim')).toBe('Sim')
+    expect(displaySpecValue({ key: 'b', label: 'B', type: 'boolean' }, 'não')).toBe('Não')
+    expect(displaySpecValue({ key: 'c', label: 'C', type: 'text' }, 'Dolby Vision')).toBe('Dolby Vision')
+    expect(displaySpecValue({ key: 'c', label: 'C', type: 'text' }, null)).toBe('—')
+    expect(displaySpecValue(undefined, '7.2')).toBe('7.2')
+  })
+})
