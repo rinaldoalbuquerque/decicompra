@@ -2,7 +2,7 @@ import { RichText, type JSXConvertersFunction } from '@payloadcms/richtext-lexic
 
 import type { SpecAttribute, SpecRow } from '@/catalog/spec-template'
 import { specWinners } from '@/content/comparison'
-import { extractHeadings, nodeText } from '@/content/rich-text'
+import { extractHeadings, internalLinkHref, nodeText } from '@/content/rich-text'
 import { toImageSet, type ProductSummary } from '@/content/view-models'
 import { relId } from '@/lib/relations'
 
@@ -88,6 +88,14 @@ export function RichContent({
 
   const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
     ...defaultConverters,
+    // Links internos apontam para a página pública do documento; não público vira texto
+    link: (args) => {
+      const fields = args.node.fields as { linkType?: string; doc?: unknown }
+      if (fields.linkType !== 'internal') return typeof defaultConverters.link === 'function' ? defaultConverters.link(args) : null
+      const children = args.nodesToJSX({ nodes: args.node.children })
+      const href = internalLinkHref(fields.doc)
+      return href ? <a href={href}>{children}</a> : <span>{children}</span>
+    },
     heading: ({ node, nodesToJSX }) => {
       const children = nodesToJSX({ nodes: node.children })
       const tag = node.tag === 'h3' ? 'h3' : node.tag === 'h2' ? 'h2' : 'h4'

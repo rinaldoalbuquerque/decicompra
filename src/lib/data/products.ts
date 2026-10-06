@@ -21,7 +21,7 @@ export type ProductPage = {
 const PUBLIC = { overrideAccess: false } as const
 
 // Resumo + documento + especificações (produto e variante de referência) para tabelas
-export type SummaryEntry = ProductSummary & { product: Product; specRows: SpecRow[] }
+export type SummaryEntry = ProductSummary & { product: Product; specRows: SpecRow[]; variants: VariantOffers[] }
 
 // Página de produto: só produtos fora de rascunho (o acesso público já filtra).
 // cache(): generateMetadata e a página leem o mesmo produto numa só consulta.
@@ -90,7 +90,13 @@ export async function getProductSummaries(ids: number[], now = new Date()): Prom
     const ownVariants = variants.docs.filter((variant) => String(typeof variant.product === 'object' ? variant.product.id : variant.product) === String(product.id))
     const reference = ownVariants.find((variant) => variant.isReference) ?? ownVariants[0]
     const specRows = [...((product.specs ?? []) as SpecRow[]), ...((reference?.specs ?? []) as SpecRow[])]
-    result.set(product.id, { ...toProductSummary(product, ownVariants, offers.docs as unknown as OfferDoc[], now), product, specRows })
+    const offerDocs = offers.docs as unknown as OfferDoc[]
+    result.set(product.id, {
+      ...toProductSummary(product, ownVariants, offerDocs, now),
+      product,
+      specRows,
+      variants: ownVariants.map((variant) => variantOffers(variant, offerDocs, now)),
+    })
   }
   return result
 }

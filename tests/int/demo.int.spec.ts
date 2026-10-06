@@ -25,4 +25,14 @@ describe('Dados de demonstração', () => {
     const contents = await payload.find({ collection: 'contents', where: { slug: { in: DEMO_SLUGS.contents } }, overrideAccess: false })
     expect(contents.totalDocs).toBe(DEMO_SLUGS.contents.length)
   })
+
+  it('recria um conteúdo de demonstração apagado (idempotente por slug)', async () => {
+    const payload = await getTestPayload()
+    await seedDemo(payload)
+    const { docs } = await payload.find({ collection: 'contents', where: { slug: { equals: 'demo-entenda-oled-vs-qled' } }, limit: 1 })
+    await payload.delete({ collection: 'contents', id: docs[0].id })
+    await seedDemo(payload)
+    const again = await payload.find({ collection: 'contents', where: { slug: { equals: 'demo-entenda-oled-vs-qled' } }, overrideAccess: false })
+    expect(again.totalDocs).toBe(1)
+  })
 })

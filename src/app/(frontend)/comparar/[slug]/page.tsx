@@ -199,7 +199,7 @@ export default async function ComparisonPage({ params }: Params) {
             </label>
             <div className="mt-3 overflow-x-auto peer-checked:[&_tr[data-equal=true]]:hidden">
               <table className="w-full border-collapse text-sm">
-                <thead className="sticky top-0">
+                <thead>
                   <tr className="bg-cinza-claro">
                     <th scope="col" className="p-2 text-left">
                       Especificação
@@ -240,9 +240,16 @@ export default async function ComparisonPage({ params }: Params) {
 
         {content.body ? (
           <Section id="analise" title="Análise detalhada">
-            <RichContent data={content.body} products={summaries} template={template} />
+            <details className="rounded-xl border border-slate-200 p-4">
+              <summary className="cursor-pointer font-semibold text-azul-eletrico">Ler a análise completa</summary>
+              <div className="mt-4">
+                <RichContent data={content.body} products={summaries} template={template} />
+              </div>
+            </details>
           </Section>
         ) : null}
+
+        <AdSlot placement="content" enabled={adsEnabled} />
 
         <Section id="conclusao" title="Conclusão">
           {content.conclusion ? <p className="mb-6 text-lg">{content.conclusion}</p> : null}

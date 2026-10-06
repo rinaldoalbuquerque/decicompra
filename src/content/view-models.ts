@@ -1,4 +1,4 @@
-import { computePriceRange, formatPriceRange } from '../catalog/price-range'
+import { computePriceRange, formatPriceRange, priceRangeParts } from '../catalog/price-range'
 import { scoreBand } from '../catalog/score'
 import { relId } from '../lib/relations'
 
@@ -9,7 +9,11 @@ export type OfferLink = { id: number; storeId: number | null; storeName: string;
 export type VariantOffers = {
   variantId: number
   label: string
+  // Texto completo ("R$ … · verificado em …"), "Indisponível no momento" ou null se desatualizada
   priceText: string | null
+  // Partes separadas para quem mostra só os valores (tabelas, barra do celular)
+  valuesText: string | null
+  verifiedText: string | null
   stale: boolean
   unavailable: boolean
   offers: OfferLink[]
@@ -77,10 +81,13 @@ export function variantOffers(variant: { id: number; label: string }, offers: Of
     (offer) => String(relId(offer.variant)) === String(variant.id) && offer.status === 'active' && storeOf(offer)?.active,
   )
   const range = computePriceRange(usable, now)
+  const parts = priceRangeParts(range)
   return {
     variantId: variant.id,
     label: variant.label,
     priceText: formatPriceRange(range),
+    valuesText: parts?.values ?? null,
+    verifiedText: parts?.verified ?? null,
     stale: range.kind === 'stale',
     unavailable: range.kind === 'unavailable',
     offers: usable.map((offer) => {
@@ -119,4 +126,20 @@ export function toProductSummary(
     image: toImageSet(product.images?.[0]),
     reference: reference ? variantOffers(reference, offers, now) : null,
   }
+}
+
+const yearInSaoPaulo = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', year: 'numeric' })
+
+// Ano exibido no título do Melhores: o da revisão (o "atualizado em"), no fuso de São Paulo
+export function listYear(dates: { reviewedAt?: string | null; publishAt?: string | null; createdAt?: string | null }): number {
+  const source = dates.reviewedAt ?? dates.publishAt ?? dates.createdAt ?? new Date().toISOString()
+  return Number(yearInSaoPaulo.format(new Date(source)))
+}
+
+// Variante usada no preço e nos botões de uma escolha do Melhores: a escolhida, se for do produto
+export function pickVariant(
+  entry: { reference: VariantOffers | null; variants: VariantOffers[] },
+  variantId: number | null | undefined,
+): VariantOffers | null {
+  return (variantId != null ? entry.variants.find((variant) => variant.variantId === variantId) : undefined) ?? entry.reference
 }

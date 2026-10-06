@@ -1,4 +1,5 @@
 import { slugify } from '../lib/slug'
+import { brandPath, contentPath, productPath, type ContentType } from './paths'
 
 export type HeadingEntry = { id: string; text: string; level: 2 | 3 }
 
@@ -55,4 +56,17 @@ export function extractHeadings(doc: unknown): HeadingEntry[] {
     entries.push({ id: count === 1 ? base : `${base}-${count}`, text, level: node.tag === 'h2' ? 2 : 3 })
   }
   return entries
+}
+
+// Link interno do texto rico → endereço público. O documento só vem populado quando é público
+// (a leitura usa o acesso público); só o id, ou produto em rascunho, vira texto sem link.
+export function internalLinkHref(doc: unknown): string | null {
+  const { relationTo, value } = (doc ?? {}) as { relationTo?: string; value?: unknown }
+  if (!value || typeof value !== 'object') return null
+  const target = value as { slug?: string | null; status?: string | null; type?: ContentType | null }
+  if (!target.slug) return null
+  if (relationTo === 'products') return target.status === 'rascunho' ? null : productPath(target.slug)
+  if (relationTo === 'contents') return target.type ? contentPath(target.type, target.slug) : null
+  if (relationTo === 'brands') return brandPath(target.slug)
+  return null
 }

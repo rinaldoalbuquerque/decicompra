@@ -16,7 +16,7 @@ const summary = (id: number, name: string, specs: { key: string; value: string }
     scoreText: '8,0',
     band: 'Muito bom',
     image: null,
-    reference: { variantId: id * 10, label: 'Única', priceText: 'Indisponível no momento', stale: false, unavailable: true, offers: [] },
+    reference: { variantId: id * 10, label: 'Única', priceText: 'Indisponível no momento', valuesText: null, verifiedText: null, stale: false, unavailable: true, offers: [] },
     product: { id, specs },
   }) as unknown as ProductSummary & { product: { id: number; specs: { key: string; value: string }[] } }
 
@@ -70,6 +70,8 @@ describe('RichContent: botão de oferta', () => {
             variantId: 10,
             label: 'Única',
             priceText: 'R$ 1.000 · verificado em 01/10/2026',
+            valuesText: 'R$ 1.000',
+            verifiedText: 'verificado em 01/10/2026',
             stale: false,
             unavailable: false,
             offers: [
@@ -82,5 +84,57 @@ describe('RichContent: botão de oferta', () => {
     ])
     render(<RichContent data={lexicalDoc([block({ blockType: 'offerButton', product: 1, store: 8 })])} products={withOffers as never} />)
     expect(screen.getAllByRole('link', { name: /^Ver na/ }).map((a) => a.textContent)).toEqual(['Ver na Loja Oito'])
+  })
+})
+
+// Parágrafo com um link interno do Lexical (doc populado = público; só o id = não público)
+const internalLink = (doc: unknown, label: string) => ({
+  type: 'paragraph',
+  format: '',
+  indent: 0,
+  version: 1,
+  direction: null,
+  textFormat: 0,
+  textStyle: '',
+  children: [
+    {
+      type: 'link',
+      format: '',
+      indent: 0,
+      version: 3,
+      direction: null,
+      fields: { linkType: 'internal', newTab: false, doc },
+      children: [{ type: 'text', text: label, format: 0, style: '', mode: 'normal', detail: 0, version: 1 }],
+    },
+  ],
+})
+
+describe('RichContent: links internos', () => {
+  it('produto e conteúdo públicos viram o endereço da página', () => {
+    render(
+      <RichContent
+        data={lexicalDoc([
+          internalLink({ relationTo: 'products', value: { id: 1, slug: 'tv-um', status: 'analise' } }, 'a TV Um'),
+          internalLink({ relationTo: 'contents', value: { id: 9, slug: 'como-escolher', type: 'guia' } }, 'o guia'),
+        ])}
+        products={new Map()}
+      />,
+    )
+    expect(screen.getByRole('link', { name: 'a TV Um' }).getAttribute('href')).toBe('/produtos/tv-um/')
+    expect(screen.getByRole('link', { name: 'o guia' }).getAttribute('href')).toBe('/guias/como-escolher/')
+  })
+
+  it('documento não público (só o id) ou em rascunho vira texto, sem link', () => {
+    render(
+      <RichContent
+        data={lexicalDoc([
+          internalLink({ relationTo: 'products', value: 7 }, 'produto escondido'),
+          internalLink({ relationTo: 'products', value: { id: 8, slug: 'rasc', status: 'rascunho' } }, 'rascunho'),
+        ])}
+        products={new Map()}
+      />,
+    )
+    expect(screen.getByText('produto escondido').closest('a')).toBeNull()
+    expect(screen.getByText('rascunho').closest('a')).toBeNull()
   })
 })

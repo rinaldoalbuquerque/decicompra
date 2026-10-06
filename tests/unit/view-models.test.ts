@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatScore, toImageSet, toProductSummary, variantOffers, type OfferDoc } from '@/content/view-models'
+import { formatScore, listYear, pickVariant, toImageSet, toProductSummary, variantOffers, type OfferDoc, type VariantOffers } from '@/content/view-models'
 
 const now = new Date('2026-10-04T12:00:00.000Z')
 const storeA = { id: 1, name: 'Loja A', active: true }
@@ -65,6 +65,8 @@ describe('variantOffers', () => {
       now,
     )
     expect(plain(result.priceText)).toBe('R$ 4.300 – R$ 4.600 · verificado em 01/10/2026')
+    expect(plain(result.valuesText)).toBe('R$ 4.300 – R$ 4.600')
+    expect(result.verifiedText).toBe('verificado em 01/10/2026')
     expect(result.offers).toEqual([{ id: 10, storeId: 1, storeName: 'Loja A', href: '/ir/10/' }])
     expect(result.stale).toBe(false)
     expect(result.unavailable).toBe(false)
@@ -73,6 +75,8 @@ describe('variantOffers', () => {
   it('desatualizada esconde a faixa e mantém os botões', () => {
     const result = variantOffers({ id: 100, label: '55"' }, [offer({ verifiedAt: '2026-07-01T12:00:00.000Z' })], now)
     expect(result.priceText).toBeNull()
+    expect(result.valuesText).toBeNull()
+    expect(result.verifiedText).toBeNull()
     expect(result.stale).toBe(true)
     expect(result.offers).toHaveLength(1)
   })
@@ -81,6 +85,7 @@ describe('variantOffers', () => {
     const result = variantOffers({ id: 100, label: '55"' }, [offer({ status: 'unavailable' })], now)
     expect(result.unavailable).toBe(true)
     expect(result.priceText).toBe('Indisponível no momento')
+    expect(result.valuesText).toBeNull()
     expect(result.offers).toEqual([])
   })
 })
@@ -104,5 +109,39 @@ describe('toProductSummary', () => {
   it('sem nota e sem variantes não quebra', () => {
     const summary = toProductSummary({ id: 2, slug: 'x', name: 'X', finalScore: null, brand: 7, images: null }, [], [], now)
     expect(summary).toMatchObject({ scoreText: null, band: null, brandName: null, reference: null })
+  })
+})
+
+describe('listYear (ano no título do Melhores)', () => {
+  it('usa a data de revisão no fuso de São Paulo', () => {
+    // 31/12/2026 às 23h em São Paulo = 01/01/2027 02h UTC
+    expect(listYear({ reviewedAt: '2027-01-01T02:00:00.000Z', publishAt: '2025-05-01T12:00:00.000Z' })).toBe(2026)
+    expect(listYear({ reviewedAt: '2027-01-01T04:00:00.000Z' })).toBe(2027)
+  })
+
+  it('sem revisão usa a publicação; sem nenhuma, a criação', () => {
+    expect(listYear({ reviewedAt: null, publishAt: '2026-06-01T12:00:00.000Z' })).toBe(2026)
+    expect(listYear({ createdAt: '2025-03-01T12:00:00.000Z' })).toBe(2025)
+  })
+})
+
+describe('pickVariant (variante da escolha no Melhores)', () => {
+  const v = (variantId: number): VariantOffers => ({
+    variantId,
+    label: String(variantId),
+    priceText: null,
+    valuesText: null,
+    verifiedText: null,
+    stale: false,
+    unavailable: true,
+    offers: [],
+  })
+  const entry = { reference: v(1), variants: [v(1), v(2)] }
+
+  it('usa a variante escolhida; sem escolha ou escolha de outro produto, a de referência', () => {
+    expect(pickVariant(entry, 2)?.variantId).toBe(2)
+    expect(pickVariant(entry, null)?.variantId).toBe(1)
+    expect(pickVariant(entry, 99)?.variantId).toBe(1)
+    expect(pickVariant({ reference: null, variants: [] }, 2)).toBeNull()
   })
 })

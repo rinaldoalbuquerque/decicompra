@@ -187,7 +187,7 @@ export const listAnalyzedProducts = cachedList(
         .map((doc) => summaries.get(doc.id))
         .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(({ product, specRows, ...summary }) => summary),
+        .map(({ product, specRows, variants, ...summary }) => summary),
       total: result.totalDocs,
       page: filter.page,
       pages: pageCount(result.totalDocs, perPage),

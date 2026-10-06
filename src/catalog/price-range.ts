@@ -36,12 +36,18 @@ const currency = new Intl.NumberFormat('pt-BR', {
 })
 const date = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' })
 
-export function formatPriceRange(range: PriceRange): string | null {
-  if (range.kind === 'unavailable') return 'Indisponível no momento'
-  if (range.kind === 'stale') return null
+// Partes da faixa exibida: valores e data de verificação (null se desatualizada ou indisponível)
+export function priceRangeParts(range: PriceRange): { values: string; verified: string } | null {
+  if (range.kind === 'unavailable' || range.kind === 'stale') return null
   const values =
     range.min === range.max ? currency.format(range.min) : `${currency.format(range.min)} – ${currency.format(range.max)}`
-  return `${values} · verificado em ${date.format(range.verifiedAt)}`
+  return { values, verified: `verificado em ${date.format(range.verifiedAt)}` }
+}
+
+export function formatPriceRange(range: PriceRange): string | null {
+  if (range.kind === 'unavailable') return 'Indisponível no momento'
+  const parts = priceRangeParts(range)
+  return parts ? `${parts.values} · ${parts.verified}` : null
 }
 
 export function offerPriceErrors(min: number, max: number): string[] {

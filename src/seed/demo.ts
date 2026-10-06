@@ -59,10 +59,13 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
   const redirect = { from: '/produtos/demo-tv-antiga/', to: '/produtos/demo-tv-alfa/' }
   const { totalDocs: hasRedirect } = await payload.count({ collection: 'redirects', where: { from: { equals: redirect.from } } })
   if (hasRedirect === 0) await payload.create({ collection: 'redirects', data: redirect as never })
-  const existing = await payload.count({ collection: 'products', where: { slug: { equals: 'demo-tv-alfa' } } })
-  if (existing.totalDocs > 0) {
-    await seedDemoHome(payload)
-    return { created: false }
+  // Idempotente por slug: só cria o que falta (um item apagado é recriado)
+  let created = false
+  const ensure = async <T extends { id: number }>(collection: 'products' | 'contents', slug: string, make: () => Promise<T>): Promise<T> => {
+    const { docs } = await payload.find({ collection, where: { slug: { equals: slug } }, limit: 1, depth: 0 })
+    if (docs[0]) return docs[0] as unknown as T
+    created = true
+    return make()
   }
 
   const { docs: subs } = await payload.find({ collection: 'categories', where: { slug: { equals: 'smart-tvs' } }, limit: 1 })
@@ -94,57 +97,6 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
     ...PUBLISH,
   })
 
-  // TV Demo Alfa: análise, 2 variantes, ofertas nas duas lojas
-  const alfaImage = await demoImage(payload, '#172554', 'TV Demo Alfa')
-  const alfa = await createProduct('TV Demo Alfa', 'demo-tv-alfa')
-  const alfa55 = await defaultVariant(alfa.id)
-  await payload.update({ collection: 'variants', id: alfa55.id, data: { label: '55"', modelCode: 'ALFA55', specs: [{ key: 'tamanho', value: '55' }, { key: 'consumo', value: '110' }] } })
-  const alfa65 = await payload.create({ collection: 'variants', data: { product: alfa.id, label: '65"', modelCode: 'ALFA65', specs: [{ key: 'tamanho', value: '65' }, { key: 'consumo', value: '140' }] } })
-  await payload.update({
-    collection: 'products',
-    id: alfa.id,
-    data: {
-      images: [alfaImage.id],
-      specs: [{ key: 'painel', value: 'OLED' }, { key: 'taxa_atualizacao', value: '144' }, { key: 'hdr', value: 'Dolby Vision' }],
-      scores: scores([9.2, 8.5, 7, 8, 8.4]),
-      ...analysis('TV Demo Alfa'),
-      status: 'analise',
-    },
-  })
-
-  // TV Demo Beta: ficha, 1 oferta
-  const betaImage = await demoImage(payload, '#2563EB', 'TV Demo Beta')
-  const beta = await createProduct('TV Demo Beta', 'demo-tv-beta')
-  const beta55 = await defaultVariant(beta.id)
-  await payload.update({ collection: 'variants', id: beta55.id, data: { label: '55"', specs: [{ key: 'tamanho', value: '55' }, { key: 'consumo', value: '95' }] } })
-  await payload.update({
-    collection: 'products',
-    id: beta.id,
-    data: {
-      images: [betaImage.id],
-      specs: [{ key: 'painel', value: 'QLED' }, { key: 'taxa_atualizacao', value: '120' }, { key: 'hdr', value: 'HDR10+' }],
-      scores: scores([8.8, 8, 7.5, 8, 8.9]),
-      status: 'ficha',
-    },
-  })
-
-  // TV Demo Gama: análise, sem oferta
-  const gamaImage = await demoImage(payload, '#16A34A', 'TV Demo Gama')
-  const gama = await createProduct('TV Demo Gama', 'demo-tv-gama')
-  const gama50 = await defaultVariant(gama.id)
-  await payload.update({ collection: 'variants', id: gama50.id, data: { label: '50"', specs: [{ key: 'tamanho', value: '50' }] } })
-  await payload.update({
-    collection: 'products',
-    id: gama.id,
-    data: {
-      images: [gamaImage.id],
-      specs: [{ key: 'painel', value: 'LED' }, { key: 'taxa_atualizacao', value: '60' }],
-      scores: scores([7, 7, 6.5, 7.5, 8]),
-      ...analysis('TV Demo Gama'),
-      status: 'analise',
-    },
-  })
-
   const offer = (product: number, variant: number, store: number, min: number, max: number) =>
     payload.create({
       collection: 'offers',
@@ -160,15 +112,76 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
         status: 'active',
       },
     })
-  await offer(alfa.id, alfa55.id, storeA.id, 4300, 4600)
-  await offer(alfa.id, alfa55.id, storeB.id, 4450, 5100)
-  await offer(alfa.id, alfa65.id, storeA.id, 6200, 6900)
-  await offer(beta.id, beta55.id, storeB.id, 3900, 4400)
+
+  // TV Demo Alfa: análise, 2 variantes, ofertas nas duas lojas
+  const alfa = await ensure('products', 'demo-tv-alfa', async () => {
+    const alfaImage = await demoImage(payload, '#172554', 'TV Demo Alfa')
+    const alfa = await createProduct('TV Demo Alfa', 'demo-tv-alfa')
+    const alfa55 = await defaultVariant(alfa.id)
+    await payload.update({ collection: 'variants', id: alfa55.id, data: { label: '55"', modelCode: 'ALFA55', specs: [{ key: 'tamanho', value: '55' }, { key: 'consumo', value: '110' }] } })
+    const alfa65 = await payload.create({ collection: 'variants', data: { product: alfa.id, label: '65"', modelCode: 'ALFA65', specs: [{ key: 'tamanho', value: '65' }, { key: 'consumo', value: '140' }] } })
+    await payload.update({
+      collection: 'products',
+      id: alfa.id,
+      data: {
+        images: [alfaImage.id],
+        specs: [{ key: 'painel', value: 'OLED' }, { key: 'taxa_atualizacao', value: '144' }, { key: 'hdr', value: 'Dolby Vision' }],
+        scores: scores([9.2, 8.5, 7, 8, 8.4]),
+        ...analysis('TV Demo Alfa'),
+        status: 'analise',
+      },
+    })
+    await offer(alfa.id, alfa55.id, storeA.id, 4300, 4600)
+    await offer(alfa.id, alfa55.id, storeB.id, 4450, 5100)
+    await offer(alfa.id, alfa65.id, storeA.id, 6200, 6900)
+    return alfa
+  })
+
+  // TV Demo Beta: ficha, 1 oferta
+  const beta = await ensure('products', 'demo-tv-beta', async () => {
+    const betaImage = await demoImage(payload, '#2563EB', 'TV Demo Beta')
+    const beta = await createProduct('TV Demo Beta', 'demo-tv-beta')
+    const beta55 = await defaultVariant(beta.id)
+    await payload.update({ collection: 'variants', id: beta55.id, data: { label: '55"', specs: [{ key: 'tamanho', value: '55' }, { key: 'consumo', value: '95' }] } })
+    await payload.update({
+      collection: 'products',
+      id: beta.id,
+      data: {
+        images: [betaImage.id],
+        specs: [{ key: 'painel', value: 'QLED' }, { key: 'taxa_atualizacao', value: '120' }, { key: 'hdr', value: 'HDR10+' }],
+        scores: scores([8.8, 8, 7.5, 8, 8.9]),
+        status: 'ficha',
+      },
+    })
+    await offer(beta.id, beta55.id, storeB.id, 3900, 4400)
+    return beta
+  })
+
+  // TV Demo Gama: análise, sem oferta
+  const gama = await ensure('products', 'demo-tv-gama', async () => {
+    const gamaImage = await demoImage(payload, '#16A34A', 'TV Demo Gama')
+    const gama = await createProduct('TV Demo Gama', 'demo-tv-gama')
+    const gama50 = await defaultVariant(gama.id)
+    await payload.update({ collection: 'variants', id: gama50.id, data: { label: '50"', specs: [{ key: 'tamanho', value: '50' }] } })
+    await payload.update({
+      collection: 'products',
+      id: gama.id,
+      data: {
+        images: [gamaImage.id],
+        specs: [{ key: 'painel', value: 'LED' }, { key: 'taxa_atualizacao', value: '60' }],
+        scores: scores([7, 7, 6.5, 7.5, 8]),
+        ...analysis('TV Demo Gama'),
+        status: 'analise',
+      },
+    })
+    return gama
+  })
+
 
   const summary = 'Conteúdo de demonstração do DeciCompra, usado para testar as páginas antes de existirem análises reais.'
   const contentBase = { summary, ...PUBLISH, status: 'publicado' as const }
 
-  await payload.create({
+  await ensure('contents', 'demo-tv-alfa-vs-demo-tv-beta', () => payload.create({
     collection: 'contents',
     data: {
       ...contentBase,
@@ -180,8 +193,8 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
       conclusion: 'A Alfa vence em imagem e games; a Beta custa menos e entrega quase o mesmo.',
       body: lexicalDoc([heading('h2', 'Imagem'), paragraph('Comparação de demonstração da imagem.'), heading('h2', 'Games'), paragraph('Comparação de demonstração para games.')]),
     },
-  })
-  await payload.create({
+  }))
+  await ensure('contents', 'demo-melhores-tvs', () => payload.create({
     collection: 'contents',
     data: {
       ...contentBase,
@@ -198,8 +211,8 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
       alsoConsidered: [],
       body: lexicalDoc([heading('h2', 'Como escolher'), paragraph('Resumo de demonstração de como escolher uma TV.')]),
     },
-  })
-  await payload.create({
+  }))
+  await ensure('contents', 'demo-guia-como-escolher-tv', () => payload.create({
     collection: 'contents',
     data: {
       ...contentBase,
@@ -217,8 +230,8 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
         block({ blockType: 'faq', items: [{ question: 'OLED queima a tela?', answer: 'O risco existe, mas é baixo com uso normal.' }] }),
       ]),
     },
-  })
-  await payload.create({
+  }))
+  await ensure('contents', 'demo-entenda-oled-vs-qled', () => payload.create({
     collection: 'contents',
     data: {
       ...contentBase,
@@ -231,10 +244,10 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
         block({ blockType: 'sideBySide', leftTitle: 'OLED', leftText: 'Cada pixel acende sozinho: preto perfeito.', rightTitle: 'QLED', rightText: 'Painel LED com pontos quânticos: mais brilho.' }),
       ]),
     },
-  })
+  }))
 
   await seedDemoHome(payload)
-  return { created: true }
+  return { created }
 }
 
 // Destaques da home com os dados de demonstração, só se nada foi escolhido no painel

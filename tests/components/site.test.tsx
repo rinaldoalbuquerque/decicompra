@@ -16,6 +16,8 @@ const variant = (o: Partial<VariantOffers> = {}): VariantOffers => ({
   variantId: 1,
   label: '55"',
   priceText: 'R$ 4.300 – R$ 4.600 · verificado em 01/10/2026',
+  valuesText: 'R$ 4.300 – R$ 4.600',
+  verifiedText: 'verificado em 01/10/2026',
   stale: false,
   unavailable: false,
   offers: [
@@ -56,10 +58,16 @@ describe('PriceRange e ScoreBadge', () => {
   it('três estados da faixa', () => {
     const { rerender } = render(<PriceRange variant={variant()} />)
     expect(screen.getByText(/R\$ 4.300/)).toBeDefined()
-    rerender(<PriceRange variant={variant({ priceText: null, stale: true })} />)
+    rerender(<PriceRange variant={variant({ priceText: null, valuesText: null, verifiedText: null, stale: true })} />)
     expect(screen.getByText(/Veja o preço atual na loja/)).toBeDefined()
-    rerender(<PriceRange variant={variant({ priceText: 'Indisponível no momento', unavailable: true, offers: [] })} />)
+    rerender(<PriceRange variant={variant({ priceText: 'Indisponível no momento', valuesText: null, verifiedText: null, unavailable: true, offers: [] })} />)
     expect(screen.getByText('Indisponível no momento')).toBeDefined()
+  })
+
+  it('a faixa usa os campos separados (valores e verificação), sem cortar o texto completo', () => {
+    render(<PriceRange variant={variant({ priceText: 'texto completo qualquer', valuesText: 'R$ 1.000', verifiedText: 'verificado em 02/10/2026' })} />)
+    expect(screen.getByText('R$ 1.000')).toBeDefined()
+    expect(screen.getByText('verificado em 02/10/2026')).toBeDefined()
   })
 
   it('nota com vírgula, faixa e rótulo acessível', () => {

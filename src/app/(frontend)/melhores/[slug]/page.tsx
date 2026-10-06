@@ -13,6 +13,7 @@ import { ScoreBadge } from '@/components/site/ScoreBadge'
 import { StoreButtons } from '@/components/site/StoreButtons'
 import { categoryPath, contentPath, productPath } from '@/content/paths'
 import { extractProductIds } from '@/content/rules'
+import { listYear, pickVariant } from '@/content/view-models'
 import { getPublicContent } from '@/lib/data/contents'
 import { getProductSummaries, type SummaryEntry } from '@/lib/data/products'
 import { getAdsEnabled } from '@/lib/data/settings'
@@ -51,6 +52,9 @@ export default async function BestPage({ params }: Params) {
     .sort((a, b) => (a.position ?? 99) - (b.position ?? 99))
     .map((pick) => ({ pick, summary: summaries.get(Number(relId(pick.product))) }))
     .filter((item): item is { pick: typeof item.pick; summary: SummaryEntry } => Boolean(item.summary))
+    // Preço e botões da variante escolhida na escolha (ou da de referência)
+    .map((item) => ({ ...item, variant: pickVariant(item.summary, relId(item.pick.variant) === null ? null : Number(relId(item.pick.variant))) }))
+  const hasOffers = picks.some(({ variant }) => (variant?.offers.length ?? 0) > 0)
   const considered = (content.alsoConsidered ?? [])
     .map((item) => ({ item, summary: summaries.get(Number(relId(item.product))) }))
     .filter((entry): entry is { item: typeof entry.item; summary: SummaryEntry } => Boolean(entry.summary))
@@ -60,7 +64,7 @@ export default async function BestPage({ params }: Params) {
   const template = (subcategory?.specTemplate ?? []) as unknown as SpecAttribute[]
   const criteria = (subcategory?.criteria ?? []) as unknown as Criterion[]
   const highlight = template.filter((attr) => attr.highlight).slice(0, 3)
-  const year = new Date(content.publishAt ?? content.createdAt).getFullYear()
+  const year = listYear(content)
   const analyzed = content.modelsAnalyzed ? `${content.modelsAnalyzed} modelos analisados · ` : ''
 
   return (
@@ -76,7 +80,7 @@ export default async function BestPage({ params }: Params) {
           title={content.title.includes(String(year)) ? content.title : `${content.title} (${year})`}
           reviewedAt={content.reviewedAt}
           authorName={typeof content.author === 'object' ? content.author?.name : null}
-          withAffiliateNotice
+          withAffiliateNotice={hasOffers}
         >
           <p className="text-sm text-texto-suave">
             {analyzed}
@@ -89,72 +93,76 @@ export default async function BestPage({ params }: Params) {
 
         {content.summary ? <p className="mt-4 text-lg">{content.summary}</p> : null}
 
-        <section aria-label="Nossas escolhas em resumo" className="mt-6 rounded-xl border-2 border-azul-eletrico bg-cinza-claro p-5">
-          <h2 className="mb-4 text-xl font-bold">Nossas escolhas em resumo</h2>
-          <ul className="divide-y divide-slate-300">
-            {picks.map(({ pick, summary }) => (
-              <li key={pick.id ?? summary.id} className="grid items-center gap-3 py-3 sm:grid-cols-[180px_80px_1fr_auto]">
-                <span className="w-fit rounded-full bg-verde-texto px-3 py-1 text-xs font-bold text-branco">{pick.profileLabel}</span>
-                <ProductImage image={summary.image} sizes="80px" className="max-w-[80px]" />
-                <div>
-                  <Link href={productPath(summary.slug)} className="font-bold hover:underline">
-                    {summary.name}
-                  </Link>{' '}
-                  <ScoreBadge score={summary.finalScore} />
-                  {summary.reference ? <PriceRange variant={summary.reference} /> : null}
-                </div>
-                {summary.reference ? <StoreButtons offers={summary.reference.offers.slice(0, 1)} stale={summary.reference.stale} compact /> : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <Section id="comparacao" title="Comparação rápida">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="bg-cinza-claro">
-                  <th scope="col" className="p-2 text-left">
-                    Modelo
-                  </th>
-                  <th scope="col" className="p-2 text-left">
-                    Nota
-                  </th>
-                  {highlight.map((attr) => (
-                    <th key={attr.key} scope="col" className="p-2 text-left">
-                      {attr.unit ? `${attr.label} (${attr.unit})` : attr.label}
-                    </th>
-                  ))}
-                  <th scope="col" className="p-2 text-left">
-                    Faixa de preço
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {picks.map(({ summary }) => (
-                  <tr key={summary.id} className="border-t border-slate-200">
-                    <th scope="row" className="p-2 text-left font-medium">
-                      {summary.name}
-                    </th>
-                    <td className="p-2">{summary.scoreText ?? '—'}</td>
-                    {highlight.map((attr) => (
-                      <td key={attr.key} className="p-2">
-                        {summary.specRows.find((row) => row.key === attr.key)?.value ?? '—'}
-                      </td>
-                    ))}
-                    <td className="p-2">{summary.reference?.stale ? 'Ver na loja' : (summary.reference?.priceText?.split(' · ')[0] ?? '—')}</td>
-                  </tr>
+        {picks.length > 0 ? (
+          <>
+            <section aria-label="Nossas escolhas em resumo" className="mt-6 rounded-xl border-2 border-azul-eletrico bg-cinza-claro p-5">
+              <h2 className="mb-4 text-xl font-bold">Nossas escolhas em resumo</h2>
+              <ul className="divide-y divide-slate-300">
+                {picks.map(({ pick, summary, variant }) => (
+                  <li key={pick.id ?? summary.id} className="grid items-center gap-3 py-3 sm:grid-cols-[180px_80px_1fr_auto]">
+                    <span className="w-fit rounded-full bg-verde-texto px-3 py-1 text-xs font-bold text-branco">{pick.profileLabel}</span>
+                    <ProductImage image={summary.image} sizes="80px" className="max-w-[80px]" />
+                    <div>
+                      <Link href={productPath(summary.slug)} className="font-bold hover:underline">
+                        {summary.name}
+                      </Link>{' '}
+                      <ScoreBadge score={summary.finalScore} />
+                      {variant ? <PriceRange variant={variant} /> : null}
+                    </div>
+                    {variant ? <StoreButtons offers={variant.offers.slice(0, 1)} stale={variant.stale} compact /> : null}
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </Section>
+              </ul>
+            </section>
+
+            <Section id="comparacao" title="Comparação rápida">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-cinza-claro">
+                      <th scope="col" className="p-2 text-left">
+                        Modelo
+                      </th>
+                      <th scope="col" className="p-2 text-left">
+                        Nota
+                      </th>
+                      {highlight.map((attr) => (
+                        <th key={attr.key} scope="col" className="p-2 text-left">
+                          {attr.unit ? `${attr.label} (${attr.unit})` : attr.label}
+                        </th>
+                      ))}
+                      <th scope="col" className="p-2 text-left">
+                        Faixa de preço
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {picks.map(({ summary, variant }) => (
+                      <tr key={summary.id} className="border-t border-slate-200">
+                        <th scope="row" className="p-2 text-left font-medium">
+                          {summary.name}
+                        </th>
+                        <td className="p-2">{summary.scoreText ?? '—'}</td>
+                        {highlight.map((attr) => (
+                          <td key={attr.key} className="p-2">
+                            {summary.specRows.find((row) => row.key === attr.key)?.value ?? '—'}
+                          </td>
+                        ))}
+                        <td className="p-2">{variant?.stale ? 'Ver na loja' : (variant?.valuesText ?? '—')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Section>
+          </>
+        ) : null}
 
         <AdSlot placement="content" enabled={adsEnabled} />
 
         <Section id="escolhas" title="Cada escolha em detalhe">
           <ol className="space-y-6">
-            {picks.map(({ pick, summary }, index) => (
+            {picks.map(({ pick, summary, variant }, index) => (
               <li key={pick.id ?? summary.id} className="grid gap-4 rounded-xl border border-slate-200 p-5 sm:grid-cols-[48px_160px_1fr]">
                 <span className="font-display text-3xl font-extrabold text-azul-eletrico">{index + 1}</span>
                 <ProductImage image={summary.image} sizes="160px" className="max-w-[200px]" />
@@ -179,10 +187,10 @@ export default async function BestPage({ params }: Params) {
                       Ver a análise completa →
                     </Link>
                   </p>
-                  {summary.reference ? (
+                  {variant ? (
                     <>
-                      <PriceRange variant={summary.reference} />
-                      <StoreButtons offers={summary.reference.offers} stale={summary.reference.stale} compact />
+                      <PriceRange variant={variant} />
+                      <StoreButtons offers={variant.offers} stale={variant.stale} compact />
                     </>
                   ) : null}
                 </div>
