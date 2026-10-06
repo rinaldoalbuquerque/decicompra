@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { TrackSearch } from '@/components/consent/Analytics'
 import { ListingPage } from '@/components/site/ListingPage'
 import { SubcategoryCard } from '@/components/site/SubcategoryCard'
 import { categoryPath } from '@/content/paths'
@@ -49,6 +50,7 @@ export default async function SearchPage({ searchParams }: Props) {
   return (
     <ListingPage breadcrumbs={[{ label: 'Início', href: '/' }, { label: 'Busca' }]} title={term ? `Busca: ${term}` : 'Busca'}>
       <SearchForm term={term} />
+      {tooShort ? null : <TrackSearch term={term} results={total} />}
 
       {results && total > 0 ? (
         <div className="mt-8 space-y-10">

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { Logo } from '@/components/brand/Logo'
+import { CookiePreferencesButton } from '@/components/consent/ConsentManager'
 import { footerColumns, type FooterColumn } from '@/config/navigation'
 
 export function SiteFooter({
@@ -36,7 +37,10 @@ export function SiteFooter({
         ))}
       </div>
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-[1280px] px-4 py-4 text-xs lg:px-8">© {year} DeciCompra</p>
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs lg:px-8">
+          <p>© {year} DeciCompra</p>
+          <CookiePreferencesButton className="underline hover:text-branco" />
+        </div>
       </div>
     </footer>
   )

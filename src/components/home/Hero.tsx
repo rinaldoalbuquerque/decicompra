@@ -5,9 +5,9 @@ import type { ImageSet } from '@/content/view-models'
 import type { SearchChip } from '@/lib/data/home'
 
 const SHORTCUTS = [
-  { icon: '🔎', label: 'Procurando um produto', href: '/categorias/' },
-  { icon: '⚖️', label: 'Em dúvida entre modelos', href: '/comparar/' },
-  { icon: '💡', label: 'Não sei qual comprar', href: '/melhores/' },
+  { icon: '🔎', label: 'Procurando um produto', href: '/categorias/', id: 'procurando' },
+  { icon: '⚖️', label: 'Em dúvida entre modelos', href: '/comparar/', id: 'em-duvida' },
+  { icon: '💡', label: 'Não sei qual comprar', href: '/melhores/', id: 'nao-sei' },
 ]
 
 // Topo escuro da home (spec §6.1, item 2)
@@ -54,7 +54,7 @@ export function Hero({ chips, image }: { chips: SearchChip[]; image: ImageSet | 
             <ul className="grid gap-3 sm:grid-cols-3">
               {SHORTCUTS.map((shortcut) => (
                 <li key={shortcut.href}>
-                  <Link href={shortcut.href} className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-3 font-semibold hover:bg-white/20">
+                  <Link href={shortcut.href} data-track="atalho_home" data-track-atalho={shortcut.id} className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-3 font-semibold hover:bg-white/20">
                     <span aria-hidden="true">{shortcut.icon}</span>
                     {shortcut.label}
                   </Link>

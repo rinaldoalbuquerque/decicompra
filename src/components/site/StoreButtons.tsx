@@ -14,6 +14,9 @@ export function StoreButtons({ offers, stale = false, compact = false }: { offer
               href={offer.href}
               rel="sponsored nofollow noopener"
               target="_blank"
+              data-track="clique_oferta"
+              data-track-loja={offer.storeName}
+              data-track-oferta={String(offer.id)}
               className={`block rounded-lg bg-azul-eletrico px-4 text-center font-semibold text-branco hover:bg-blue-700 ${compact ? 'py-1.5 text-sm' : 'py-2.5'}`}
             >
               {stale ? `Ver preço na ${offer.storeName}` : `Ver na ${offer.storeName}`}
