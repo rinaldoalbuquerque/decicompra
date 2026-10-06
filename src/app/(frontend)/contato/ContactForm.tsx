@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 
-import { CONTACT_SUBJECTS, type ContactField } from '@/content/contact'
+import { CONTACT_SUBJECTS, HONEYPOT_FIELD, type ContactField } from '@/content/contact'
 
 import { sendContact, type ContactState } from './actions'
 
@@ -80,8 +80,8 @@ export function ContactForm() {
       {/* Campo isca para robôs: escondido de pessoas e de leitores de tela */}
       <div aria-hidden="true" className="absolute -left-[10000px] h-px w-px overflow-hidden">
         <label>
-          Site
-          <input name="site" tabIndex={-1} autoComplete="off" defaultValue="" />
+          Não preencha este campo
+          <input name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" defaultValue="" />
         </label>
       </div>
       <button type="submit" disabled={pending} className="rounded-lg bg-azul-profundo px-5 py-3 font-semibold text-branco disabled:opacity-60">

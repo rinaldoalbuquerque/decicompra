@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { CONTACT_SUBJECTS, createRateLimiter, sendContactEmail, validateContact } from '@/content/contact'
 
-const valid = { nome: 'Maria Silva', email: 'maria@exemplo.com', assunto: 'Dúvida', mensagem: 'Gostaria de saber mais sobre as notas.', site: '' }
+const valid = { nome: 'Maria Silva', email: 'maria@exemplo.com', assunto: 'Dúvida', mensagem: 'Gostaria de saber mais sobre as notas.', confirmar_contato_hp: '' }
 
 describe('formulário de contato: validação', () => {
   it('assuntos da spec §6.11', () => {
@@ -18,10 +18,19 @@ describe('formulário de contato: validação', () => {
   })
 
   it('erros por campo', () => {
-    const result = validateContact({ nome: 'M', email: 'nao-e-email', assunto: 'Qualquer', mensagem: 'curta', site: '' })
+    const result = validateContact({ nome: 'M', email: 'nao-e-email', assunto: 'Qualquer', mensagem: 'curta', confirmar_contato_hp: '' })
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(Object.keys(result.errors).sort()).toEqual(['assunto', 'email', 'mensagem', 'nome'])
+  })
+
+  it('um campo chamado "site" (que o preenchimento automático pode preencher) não conta como isca', () => {
+    expect(validateContact({ ...valid, site: 'https://meusite.com' } as never)).toMatchObject({ ok: true, spam: false })
+  })
+
+  it('quebras de linha e tabulações no nome viram espaço (o nome vai no assunto do e-mail)', () => {
+    const result = validateContact({ ...valid, nome: 'Maria\r\nBcc: x@y.com\tSilva' })
+    expect(result).toMatchObject({ ok: true, data: { nome: 'Maria Bcc: x@y.com Silva' } })
   })
 
   it('mensagem enorme é recusada', () => {
@@ -30,7 +39,7 @@ describe('formulário de contato: validação', () => {
   })
 
   it('campo isca preenchido (robô) é marcado como spam', () => {
-    const result = validateContact({ ...valid, site: 'http://spam.com' })
+    const result = validateContact({ ...valid, confirmar_contato_hp: 'http://spam.com' })
     expect(result).toMatchObject({ ok: true, spam: true })
   })
 })

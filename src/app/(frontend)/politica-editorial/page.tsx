@@ -56,7 +56,7 @@ export default function EditorialPolicyPage() {
       </p>
       <ul>
         <li>Verificamos cada aviso e, se o erro se confirmar, corrigimos o conteúdo.</li>
-        <li>Correções que mudam uma nota, um ranking ou uma recomendação são registradas no próprio conteúdo, com a data da correção.</li>
+        <li>Correções que mudam uma nota, um ranking ou uma recomendação são informadas no próprio texto, com uma nota de correção datada.</li>
         <li>Ajustes pequenos (digitação, links) são feitos sem registro.</li>
       </ul>
     </InstitutionalPage>

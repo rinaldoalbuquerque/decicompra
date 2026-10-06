@@ -2,7 +2,7 @@
 
 import { headers } from 'next/headers'
 
-import { createRateLimiter, sendContactEmail, validateContact, type ContactField } from '@/content/contact'
+import { createRateLimiter, HONEYPOT_FIELD, sendContactEmail, validateContact, type ContactField } from '@/content/contact'
 import { getContactEmail } from '@/lib/data/settings'
 
 export type ContactState = {
@@ -21,7 +21,7 @@ export async function sendContact(_previous: ContactState, formData: FormData): 
     return typeof value === 'string' ? value : ''
   }
   const values = { nome: field('nome'), email: field('email'), assunto: field('assunto'), mensagem: field('mensagem') }
-  const result = validateContact({ ...values, site: field('site') })
+  const result = validateContact({ ...values, [HONEYPOT_FIELD]: field(HONEYPOT_FIELD) })
   if (!result.ok) return { status: 'error', message: 'Confira os campos destacados.', errors: result.errors, values }
   // Robô: responde como se tivesse enviado, sem enviar
   if (result.spam) return { status: 'sent' }

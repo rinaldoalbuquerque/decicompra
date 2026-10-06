@@ -56,9 +56,9 @@ export default async function PrivacyPage() {
             <td>Procedimentos a pedido do titular e legítimo interesse</td>
           </tr>
           <tr>
-            <td>Endereço IP e dados técnicos de acesso (registros do servidor)</td>
+            <td>Endereço IP e dados técnicos de acesso, registrados pela empresa de hospedagem</td>
             <td>Segurança, prevenção de abuso e funcionamento do site</td>
-            <td>Legítimo interesse e cumprimento de obrigação legal</td>
+            <td>Legítimo interesse</td>
           </tr>
           <tr>
             <td>Sua escolha no aviso de cookies</td>
@@ -94,19 +94,20 @@ export default async function PrivacyPage() {
         <li>Google (Analytics e AdSense), apenas com o seu consentimento;</li>
         <li>Vercel, que hospeda o site;</li>
         <li>Cloudflare, que armazena e entrega as imagens;</li>
-        <li>o serviço de e-mail que entrega as mensagens do formulário de contato;</li>
+        <li>Resend, que entrega por e-mail as mensagens do formulário de contato;</li>
         <li>autoridades públicas, quando houver obrigação legal.</li>
       </ul>
       <p>
-        Alguns desses serviços ficam fora do Brasil. Nesses casos, a transferência internacional segue as hipóteses previstas na LGPD. Ao clicar
-        num link de loja, você passa a seguir a política de privacidade da loja.
+        Google, Vercel, Cloudflare e Resend processam dados em servidores fora do Brasil (principalmente nos Estados Unidos). Essas
+        transferências internacionais seguem as hipóteses do art. 33 da LGPD, como as garantias contratuais oferecidas por esses
+        fornecedores. Ao clicar num link de loja, você passa a seguir a política de privacidade da loja.
       </p>
 
       <h2>Por quanto tempo guardamos</h2>
       <ul>
         <li>Mensagens de contato: pelo tempo necessário para responder e resolver o assunto.</li>
         <li>Escolha de cookies: 12 meses, quando perguntamos de novo.</li>
-        <li>Registros técnicos de acesso: pelo prazo exigido em lei (Marco Civil da Internet).</li>
+        <li>Registros técnicos de acesso: o site não os guarda; a empresa de hospedagem os mantém por poucos dias, para segurança.</li>
       </ul>
 
       <h2>Seus direitos</h2>

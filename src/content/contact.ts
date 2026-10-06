@@ -6,7 +6,11 @@ export const CONTACT_SUBJECTS = ['Dúvida', 'Correção de conteúdo', 'Parceria
 export type ContactData = { nome: string; email: string; assunto: (typeof CONTACT_SUBJECTS)[number]; mensagem: string }
 export type ContactField = keyof ContactData
 
-type RawContact = Partial<Record<ContactField | 'site', unknown>>
+// Campo isca com nome que o preenchimento automático do navegador não reconhece (ex.: "site" seria
+// preenchido e a mensagem de uma pessoa real seria descartada como robô)
+export const HONEYPOT_FIELD = 'confirmar_contato_hp'
+
+type RawContact = Partial<Record<ContactField | typeof HONEYPOT_FIELD, unknown>>
 
 export type ContactValidation =
   | { ok: true; spam: boolean; data: ContactData }
@@ -16,7 +20,8 @@ const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function validateContact(raw: RawContact): ContactValidation {
-  const nome = text(raw.nome)
+  // O nome vai no assunto do e-mail: sem quebras de linha nem tabulações
+  const nome = text(raw.nome).replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ')
   const email = text(raw.email)
   const assunto = text(raw.assunto)
   const mensagem = text(raw.mensagem)
@@ -28,7 +33,7 @@ export function validateContact(raw: RawContact): ContactValidation {
   else if (mensagem.length > 5000) errors.mensagem = 'A mensagem pode ter até 5.000 caracteres.'
   if (Object.keys(errors).length > 0) return { ok: false, errors }
   // Campo isca escondido: pessoas não o veem; robôs costumam preencher
-  return { ok: true, spam: text(raw.site) !== '', data: { nome, email, assunto: assunto as ContactData['assunto'], mensagem } }
+  return { ok: true, spam: text(raw[HONEYPOT_FIELD]) !== '', data: { nome, email, assunto: assunto as ContactData['assunto'], mensagem } }
 }
 
 // Limite por IP em memória. Na Vercel cada instância tem a sua contagem: é uma barreira contra abuso
