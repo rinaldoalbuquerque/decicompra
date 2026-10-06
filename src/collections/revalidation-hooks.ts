@@ -3,7 +3,7 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, PayloadReque
 import { authorPath, brandPath, categoryPath, contentPath, productPath } from '../content/paths'
 import { pathsForBrand, pathsForCategory, pathsForContent, pathsForProduct } from '../content/revalidation'
 import { relId } from '../lib/relations'
-import { revalidateLists, revalidatePaths } from '../lib/revalidate'
+import { revalidateLists, revalidatePaths, revalidateTaxonomy } from '../lib/revalidate'
 
 // Liga as mudanças salvas no painel à atualização das páginas geradas (spec §5.6)
 
@@ -69,7 +69,12 @@ async function productPagesOf(req: PayloadRequest, where: Where): Promise<string
   return docs.filter((product) => product.slug).map((product) => productPath(product.slug!))
 }
 
+// Mudanças que alteram quais subcategorias têm item público (menu, home, /categorias/)
+const sameIds = (a: unknown[] | null | undefined, b: unknown[] | null | undefined) =>
+  JSON.stringify(ids(a ?? []).sort()) === JSON.stringify(ids(b ?? []).sort())
+
 export const revalidateProduct: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
+  if (doc.status !== previousDoc?.status || relId(doc.subcategory) !== relId(previousDoc?.subcategory)) await revalidateTaxonomy()
   const paths = await productsPaths(req, [doc.id], previousDoc?.slug)
   // Status ou subcategoria mudou: o produto entra ou sai do bloco "Alternativas" dos vizinhos
   const subcategoryIds = ids([doc.subcategory, previousDoc?.subcategory])
@@ -81,6 +86,7 @@ export const revalidateProduct: CollectionAfterChangeHook = async ({ doc, previo
 }
 
 export const revalidateDeletedProduct: CollectionAfterDeleteHook = async ({ doc }) => {
+  await revalidateTaxonomy()
   if (doc.slug) await revalidatePages([productPath(doc.slug), '/'])
 }
 
@@ -104,6 +110,12 @@ async function citedProductPages(req: PayloadRequest, ...docs: CitingDoc[]): Pro
 }
 
 export const revalidateContent: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
+  const visibilityChanged =
+    doc.status !== previousDoc?.status ||
+    doc.publishAt !== previousDoc?.publishAt ||
+    relId(doc.primarySubcategory) !== relId(previousDoc?.primarySubcategory) ||
+    !sameIds(doc.relatedSubcategories, previousDoc?.relatedSubcategories)
+  if (visibilityChanged) await revalidateTaxonomy()
   if (!doc.slug) return doc
   await revalidatePages([
     ...pathsForContent({
@@ -118,6 +130,7 @@ export const revalidateContent: CollectionAfterChangeHook = async ({ doc, previo
 }
 
 export const revalidateDeletedContent: CollectionAfterDeleteHook = async ({ doc, req }) => {
+  await revalidateTaxonomy()
   if (!doc.slug) return
   await revalidatePages([
     ...pathsForContent({ type: doc.type, slug: doc.slug, subcategoryPath: await subcategoryPathOf(req, relId(doc.primarySubcategory)) }),
@@ -126,6 +139,7 @@ export const revalidateDeletedContent: CollectionAfterDeleteHook = async ({ doc,
 }
 
 export const revalidateCategory: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
+  await revalidateTaxonomy()
   if (!doc.slug) return doc
   const parentOf = async (id: Id | null) =>
     id === null ? null : await req.payload.findByID({ collection: 'categories', id, depth: 0, req, disableErrors: true })

@@ -4,6 +4,7 @@ import { pageCount, PER_PAGE } from '@/content/pagination'
 import { contentPath, type ContentType } from '@/content/paths'
 import type { ProductSummary } from '@/content/view-models'
 import { relId } from '@/lib/relations'
+import { TAXONOMY_TAG } from '@/lib/revalidate'
 
 import { cachedList } from './cache'
 import { getSitePayload } from './payload'
@@ -80,7 +81,7 @@ export const getPublicTaxonomy = cachedList('taxonomia-publica', async (): Promi
         .map((doc) => ({ ...toBase(doc), publicItems: items.get(doc.id)! })),
     }))
     .filter((category) => category.subcategories.length > 0)
-})
+}, [TAXONOMY_TAG])
 
 type CardDoc = {
   id: number

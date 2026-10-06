@@ -11,6 +11,7 @@ const payloadPromise = getTestPayload()
 let tracker: Tracker
 const paths: string[] = []
 let listRevalidations = 0
+const tags: string[] = []
 
 beforeAll(async () => {
   const payload = await payloadPromise
@@ -19,8 +20,9 @@ beforeAll(async () => {
   setRevalidator((path) => {
     paths.push(path)
   })
-  setListsRevalidator(() => {
+  setListsRevalidator((tag) => {
     listRevalidations++
+    tags.push(tag)
   })
 })
 afterAll(async () => {
@@ -116,5 +118,40 @@ describe('Atualização das listas', () => {
     paths.length = 0
     await payload.update({ collection: 'categories', id: subcategory.id, data: { parent: other.id } })
     expect(paths).toEqual(expect.arrayContaining([`/${category.slug}/${subcategory.slug}/`, `/${other.slug}/${subcategory.slug}/`]))
+  })
+
+  it('a taxonomia (menu em todas as páginas) só é invalidada quando muda: preço de oferta não; status de produto sim', async () => {
+    const payload = await payloadPromise
+    const { docs: offers } = await payload.find({ collection: 'offers', where: { 'product.slug': { equals: 'demo-tv-alfa' } }, limit: 1 })
+    tags.length = 0
+    await payload.update({ collection: 'offers', id: offers[0].id, data: { verifiedAt: new Date().toISOString() } })
+    expect(tags).toContain('listas')
+    expect(tags).not.toContain('taxonomia')
+
+    const { docs: products } = await payload.find({ collection: 'products', where: { slug: { equals: 'demo-tv-gama' } }, limit: 1 })
+    tags.length = 0
+    await payload.update({ collection: 'products', id: products[0].id, data: { status: 'ficha' } })
+    try {
+      expect(tags).toContain('taxonomia')
+    } finally {
+      await payload.update({ collection: 'products', id: products[0].id, data: { status: 'analise' } })
+    }
+
+    tags.length = 0
+    await payload.update({ collection: 'products', id: products[0].id, data: { name: products[0].name } })
+    expect(tags).not.toContain('taxonomia')
+  })
+
+  it('salvar uma categoria ou mudar o status de um conteúdo invalida a taxonomia', async () => {
+    const payload = await payloadPromise
+    const { docs: subs } = await payload.find({ collection: 'categories', where: { slug: { equals: 'soundbars' } }, limit: 1 })
+    tags.length = 0
+    await payload.update({ collection: 'categories', id: subs[0].id, data: { name: subs[0].name } })
+    expect(tags).toContain('taxonomia')
+
+    const { docs } = await payload.find({ collection: 'contents', where: { slug: { equals: 'demo-entenda-oled-vs-qled' } }, limit: 1 })
+    tags.length = 0
+    await payload.update({ collection: 'contents', id: docs[0].id, data: { summary: docs[0].summary } })
+    expect(tags).not.toContain('taxonomia')
   })
 })

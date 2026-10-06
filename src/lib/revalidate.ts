@@ -25,13 +25,16 @@ export async function revalidatePaths(paths: string[]): Promise<void> {
 // Listas paginadas (hubs, índices, marca, autor) guardam os dados com a etiqueta "listas":
 // qualquer mudança no painel esvazia esse cache. expire: 0 = a próxima visita já busca de novo.
 export const LISTS_TAG = 'listas'
+// Categorias com item público (menu "Categorias", presente em todas as páginas): etiqueta própria,
+// invalidada só quando a taxonomia pública pode mudar, para não refazer o site inteiro a cada gravação
+export const TAXONOMY_TAG = 'taxonomia'
 
-type ListsRevalidator = () => void | Promise<void>
+type ListsRevalidator = (tag: string) => void | Promise<void>
 
-const nextListsRevalidator: ListsRevalidator = async () => {
+const nextListsRevalidator: ListsRevalidator = async (tag) => {
   try {
     const { revalidateTag } = await import('next/cache')
-    revalidateTag(LISTS_TAG, { expire: 0 })
+    revalidateTag(tag, { expire: 0 })
   } catch {
     // sem contexto do Next
   }
@@ -45,5 +48,9 @@ export function setListsRevalidator(revalidator: ListsRevalidator | null): void 
 }
 
 export async function revalidateLists(): Promise<void> {
-  await currentLists()
+  await currentLists(LISTS_TAG)
+}
+
+export async function revalidateTaxonomy(): Promise<void> {
+  await currentLists(TAXONOMY_TAG)
 }
