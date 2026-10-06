@@ -21,6 +21,9 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: auto
+      # O R2 não aceita os checksums que as versões novas do AWS CLI enviam por padrão
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
       KEEP: '8'
 
     steps:
@@ -38,11 +41,12 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Gerar o arquivo (pg_dump 17)
+      # O pg_dump precisa ser da mesma versão do servidor ou mais nova (o Neon de produção é Postgres 18)
+      - name: Gerar o arquivo (pg_dump 18)
         if: steps.config.outputs.ready == 'true'
         run: |
           file="decicompra-$(date -u +%Y-%m-%d-%H%M).dump"
-          docker run --rm -e DATABASE_URL postgres:17 pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges > "$file"
+          docker run --rm -e DATABASE_URL postgres:18 pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges > "$file"
           test -s "$file"
           echo "FILE=$file" >> "$GITHUB_ENV"
           ls -lh "$file"
