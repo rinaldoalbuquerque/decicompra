@@ -6,8 +6,10 @@ test('home mostra slogan, cabeçalho, rodapé e não é indexável antes do lan�
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR')
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Compare. Entenda. Decida.')
-  await expect(page.getByRole('navigation', { name: 'Principal' }).getByRole('link')).toHaveText([
-    'Categorias',
+  // Com categorias públicas (dados de demonstração), "Categorias" abre o menu
+  const nav = page.getByRole('navigation', { name: 'Principal' })
+  await expect(nav.getByRole('button', { name: /Categorias/ })).toBeVisible()
+  await expect(nav.getByRole('link')).toHaveText([
     'Melhores',
     'Comparativos',
     'Guias',

@@ -4,6 +4,7 @@ import React from 'react'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { inter, manrope } from '@/design/fonts'
+import { getPublicTaxonomy, type PublicCategory } from '@/lib/data/lists'
 import { getSiteNavigation } from '@/lib/site-navigation'
 
 import './globals.css'
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const navigation = await getSiteNavigation()
+  const [navigation, categories] = await Promise.all([getSiteNavigation(), getPublicTaxonomy().catch((): PublicCategory[] => [])])
   return (
     <html lang="pt-BR" className={`${inter.variable} ${manrope.variable}`}>
       <body className="flex min-h-screen flex-col bg-branco text-texto antialiased">
@@ -26,7 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           Pular para o conteúdo
         </a>
-        <SiteHeader links={navigation.mainNav} />
+        <SiteHeader links={navigation.mainNav} categories={categories} />
         <main id="conteudo" className="flex-1">
           {children}
         </main>

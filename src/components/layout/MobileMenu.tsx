@@ -4,8 +4,12 @@ import Link from 'next/link'
 import { useEffect, useId, useRef, useState } from 'react'
 
 import type { NavLink } from '@/config/navigation'
+import { categoryPath } from '@/content/paths'
+import type { PublicCategory } from '@/lib/data/lists'
 
-export function MobileMenu({ links }: { links: NavLink[] }) {
+import { SearchBox } from './SearchBox'
+
+export function MobileMenu({ links, categories = [] }: { links: NavLink[]; categories?: PublicCategory[] }) {
   const [open, setOpen] = useState(false)
   const panelId = useId()
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -52,6 +56,9 @@ export function MobileMenu({ links }: { links: NavLink[] }) {
         hidden={!open}
         className="absolute inset-x-0 top-16 z-40 border-t border-white/10 bg-azul-profundo shadow-lg"
       >
+        <div className="px-4 pt-4">
+          <SearchBox />
+        </div>
         <ul className="flex flex-col px-4 py-2">
           {links.map((link) => (
             <li key={link.href}>
@@ -61,6 +68,29 @@ export function MobileMenu({ links }: { links: NavLink[] }) {
             </li>
           ))}
         </ul>
+        {categories.length > 0 ? (
+          <div className="border-t border-white/10 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-blue-200">Categorias</p>
+            <ul className="mt-2 space-y-1">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <Link href={categoryPath(category.slug)} onClick={() => setOpen(false)} className="block py-2 font-medium">
+                    {category.name}
+                  </Link>
+                  <ul className="mb-2 space-y-1 pl-4 text-sm text-blue-100">
+                    {category.subcategories.map((sub) => (
+                      <li key={sub.id}>
+                        <Link href={categoryPath(sub.slug, category.slug)} onClick={() => setOpen(false)} className="block py-1">
+                          {sub.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </nav>
     </div>
   )

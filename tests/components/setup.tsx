@@ -11,4 +11,10 @@ vi.mock('next/link', () => ({
   ),
 }))
 
+// Nem o roteador do App Router: endereço fixo fora da home e navegação que não faz nada
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/produtos/exemplo/',
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
+}))
+
 afterEach(() => cleanup())
