@@ -1,0 +1,60 @@
+name: Backup do banco
+
+# Backup semanal do banco de produção (spec §12.5): domingo às 03:00 de Brasília, ou manual.
+# O arquivo vai para um bucket R2 PRIVADO (nunca o bucket público das imagens). Guarda as 8 cópias mais recentes.
+on:
+  schedule:
+    - cron: '0 6 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+      R2_ENDPOINT: ${{ secrets.BACKUP_R2_ENDPOINT }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      KEEP: '8'
+
+    steps:
+      - name: Conferir configuração
+        id: config
+        run: |
+          missing=""
+          for name in DATABASE_URL BUCKET R2_ENDPOINT AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::warning::Backup não configurado (faltam segredos BACKUP_*:$missing). Veja a seção Backup do README."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Gerar o arquivo (pg_dump 17)
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          file="decicompra-$(date -u +%Y-%m-%d-%H%M).dump"
+          docker run --rm -e DATABASE_URL postgres:17 pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges > "$file"
+          test -s "$file"
+          echo "FILE=$file" >> "$GITHUB_ENV"
+          ls -lh "$file"
+
+      - name: Enviar para o R2
+        if: steps.config.outputs.ready == 'true'
+        run: aws s3 cp "$FILE" "s3://$BUCKET/backups/$FILE" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+
+      - name: Apagar cópias antigas (fica com as mais recentes)
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          aws s3 ls "s3://$BUCKET/backups/" --endpoint-url "$R2_ENDPOINT" | awk '{print $4}' | grep '^decicompra-.*\.dump$' | sort -r | tail -n +$((KEEP + 1)) | while read -r old; do
+            aws s3 rm "s3://$BUCKET/backups/$old" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+            echo "apagado: $old"
+          done
