@@ -6,6 +6,10 @@ import { SearchBox } from '@/components/layout/SearchBox'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { mainNav } from '@/config/navigation'
 
+// Endereço atual controlado pelo teste (a home esconde só a busca do cabeçalho do computador)
+const navigation = vi.hoisted(() => ({ pathname: '/produtos/x/' }))
+vi.mock('next/navigation', () => ({ usePathname: () => navigation.pathname, useRouter: () => ({ push: vi.fn() }) }))
+
 const suggestions = {
   groups: [
     { type: 'products', label: 'Produtos', items: [{ title: 'TV Demo Alfa', href: '/produtos/demo-tv-alfa/' }] },
@@ -70,6 +74,47 @@ describe('SearchBox', () => {
     expect(input.getAttribute('aria-activedescendant')).toBe(options[1].id)
     fireEvent.keyDown(input, { key: 'Escape' })
     expect(screen.queryByRole('listbox')).toBeNull()
+  })
+})
+
+describe('SearchBox: home, mouse e leitor de tela', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => suggestions })),
+    )
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+    navigation.pathname = '/produtos/x/'
+  })
+
+  it('na home só a busca do cabeçalho (computador) fica escondida; a do menu do celular aparece', () => {
+    navigation.pathname = '/'
+    const { container } = render(
+      <>
+        <SearchBox hideOnHomeUntilScroll />
+        <SearchBox />
+      </>,
+    )
+    const forms = container.querySelectorAll('form')
+    expect(forms[0].className).toContain('invisible')
+    expect(forms[1].className).not.toContain('invisible')
+  })
+
+  it('opções fora da ordem de Tab, clique não fecha a lista antes de navegar e contagem anunciada', async () => {
+    render(<SearchBox />)
+    fireEvent.change(screen.getByRole('combobox', { name: 'Buscar no DeciCompra' }), { target: { value: 'alf' } })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300)
+    })
+    const options = screen.getAllByRole('option')
+    expect(options.every((option) => option.getAttribute('tabindex') === '-1')).toBe(true)
+    // mousedown cancelado = o campo não perde o foco e a lista continua aberta até o clique
+    expect(fireEvent.mouseDown(options[0])).toBe(false)
+    expect(screen.getByRole('status').textContent).toBe('2 sugestões')
   })
 })
 

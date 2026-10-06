@@ -32,7 +32,7 @@ export function SiteHeader({ links = mainNav, categories = [] }: { links?: NavLi
             ))}
           </ul>
         </nav>
-        <SearchBox className="hidden w-full max-w-xs md:block" />
+        <SearchBox hideOnHomeUntilScroll className="hidden w-full max-w-xs md:block" />
         <MobileMenu links={links} categories={categories} />
       </div>
     </header>

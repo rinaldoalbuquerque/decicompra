@@ -6,8 +6,9 @@ import { useEffect, useId, useState, type KeyboardEvent } from 'react'
 import type { SuggestionGroup } from '@/content/search-suggestions'
 
 // Busca do cabeçalho (spec §6.9): sem JavaScript é um formulário GET para /busca/; com JavaScript,
-// sugestões a partir de 2 letras. Na home, só aparece depois que a busca principal sai da tela.
-export function SearchBox({ className = '' }: { className?: string }) {
+// sugestões a partir de 2 letras. hideOnHomeUntilScroll (busca do cabeçalho no computador): na home,
+// só aparece depois que a busca principal sai da tela.
+export function SearchBox({ className = '', hideOnHomeUntilScroll = false }: { className?: string; hideOnHomeUntilScroll?: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
   const listId = useId()
@@ -16,7 +17,7 @@ export function SearchBox({ className = '' }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
   const [heroVisible, setHeroVisible] = useState(true)
-  const onHome = pathname === '/'
+  const onHome = hideOnHomeUntilScroll && pathname === '/'
 
   useEffect(() => {
     const query = term.trim()
@@ -116,6 +117,9 @@ export function SearchBox({ className = '' }: { className?: string }) {
                     role="option"
                     aria-selected={current === active}
                     href={item.href}
+                    tabIndex={-1}
+                    // Mantém o foco no campo: a lista não fecha (onBlur) antes de o clique navegar
+                    onMouseDown={(event) => event.preventDefault()}
                     className={`block rounded px-2 py-2 text-sm ${current === active ? 'bg-cinza-claro font-semibold' : 'hover:bg-cinza-claro'}`}
                   >
                     {item.title}
@@ -126,6 +130,9 @@ export function SearchBox({ className = '' }: { className?: string }) {
           ))}
         </div>
       ) : null}
+      <p role="status" className="sr-only">
+        {expanded ? `${options.length} ${options.length === 1 ? 'sugestão' : 'sugestões'}` : ''}
+      </p>
     </form>
   )
 }
