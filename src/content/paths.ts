@@ -12,6 +12,8 @@ export const productPath = (slug: string) => `/produtos/${slug}/`
 
 export const brandPath = (slug: string) => `/marcas/${slug}/`
 
+export const authorPath = (slug: string) => `/autores/${slug}/`
+
 export const categoryPath = (slug: string, parentSlug?: string | null) =>
   parentSlug ? `/${parentSlug}/${slug}/` : `/${slug}/`
 

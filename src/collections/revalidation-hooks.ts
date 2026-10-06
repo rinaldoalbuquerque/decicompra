@@ -1,11 +1,17 @@
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, PayloadRequest, Where } from 'payload'
 
-import { brandPath, categoryPath, contentPath, productPath } from '../content/paths'
+import { authorPath, brandPath, categoryPath, contentPath, productPath } from '../content/paths'
 import { pathsForBrand, pathsForCategory, pathsForContent, pathsForProduct } from '../content/revalidation'
 import { relId } from '../lib/relations'
-import { revalidatePaths } from '../lib/revalidate'
+import { revalidateLists, revalidatePaths } from '../lib/revalidate'
 
 // Liga as mudanças salvas no painel à atualização das páginas geradas (spec §5.6)
+
+// Páginas geradas + cache das listas paginadas (que dependem de quase tudo)
+async function revalidatePages(paths: string[]): Promise<void> {
+  await revalidatePaths(paths)
+  await revalidateLists()
+}
 
 type Id = number | string
 
@@ -70,23 +76,23 @@ export const revalidateProduct: CollectionAfterChangeHook = async ({ doc, previo
   if (subcategoryIds.length && (doc.status !== previousDoc?.status || relId(doc.subcategory) !== relId(previousDoc?.subcategory))) {
     paths.push(...(await productPagesOf(req, { and: [{ subcategory: { in: subcategoryIds } }, { id: { not_equals: doc.id } }] })))
   }
-  await revalidatePaths([...new Set(paths)])
+  await revalidatePages([...new Set(paths)])
   return doc
 }
 
 export const revalidateDeletedProduct: CollectionAfterDeleteHook = async ({ doc }) => {
-  if (doc.slug) await revalidatePaths([productPath(doc.slug), '/'])
+  if (doc.slug) await revalidatePages([productPath(doc.slug), '/'])
 }
 
 // Variantes e ofertas mudam o que a página do produto (e quem o cita) mostra; se mudaram de
 // produto, o anterior também
 export const revalidateProductOfDoc: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
-  await revalidatePaths(await productsPaths(req, ids([doc.product, previousDoc?.product])))
+  await revalidatePages(await productsPaths(req, ids([doc.product, previousDoc?.product])))
   return doc
 }
 
 export const revalidateProductOfDeletedDoc: CollectionAfterDeleteHook = async ({ doc, req }) => {
-  await revalidatePaths(await productsPaths(req, ids([doc.product])))
+  await revalidatePages(await productsPaths(req, ids([doc.product])))
 }
 
 // Páginas dos produtos citados (antes e depois): o bloco "Alternativas e comparativos" lista o conteúdo
@@ -99,7 +105,7 @@ async function citedProductPages(req: PayloadRequest, ...docs: CitingDoc[]): Pro
 
 export const revalidateContent: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
   if (!doc.slug) return doc
-  await revalidatePaths([
+  await revalidatePages([
     ...pathsForContent({
       type: doc.type,
       slug: doc.slug,
@@ -113,7 +119,7 @@ export const revalidateContent: CollectionAfterChangeHook = async ({ doc, previo
 
 export const revalidateDeletedContent: CollectionAfterDeleteHook = async ({ doc, req }) => {
   if (!doc.slug) return
-  await revalidatePaths([
+  await revalidatePages([
     ...pathsForContent({ type: doc.type, slug: doc.slug, subcategoryPath: await subcategoryPathOf(req, relId(doc.primarySubcategory)) }),
     ...(await citedProductPages(req, doc)),
   ])
@@ -121,12 +127,15 @@ export const revalidateDeletedContent: CollectionAfterDeleteHook = async ({ doc,
 
 export const revalidateCategory: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
   if (!doc.slug) return doc
-  const parentId = relId(doc.parent)
-  const parent = parentId === null ? null : await req.payload.findByID({ collection: 'categories', id: parentId, depth: 0, req, disableErrors: true })
-  await revalidatePaths(
+  const parentOf = async (id: Id | null) =>
+    id === null ? null : await req.payload.findByID({ collection: 'categories', id, depth: 0, req, disableErrors: true })
+  const parent = await parentOf(relId(doc.parent))
+  const previousParentId = relId(previousDoc?.parent)
+  const previousParent = previousParentId === relId(doc.parent) ? parent : await parentOf(previousParentId)
+  await revalidatePages(
     pathsForCategory({
       path: categoryPath(doc.slug, parent?.slug ?? null),
-      previousPath: previousDoc?.slug ? categoryPath(previousDoc.slug, parent?.slug ?? null) : null,
+      previousPath: previousDoc?.slug ? categoryPath(previousDoc.slug, previousParent?.slug ?? null) : null,
       parentPath: parent?.slug ? categoryPath(parent.slug) : null,
     }),
   )
@@ -134,7 +143,7 @@ export const revalidateCategory: CollectionAfterChangeHook = async ({ doc, previ
 }
 
 export const revalidateBrand: CollectionAfterChangeHook = async ({ doc, previousDoc }) => {
-  if (doc.slug) await revalidatePaths(pathsForBrand({ slug: doc.slug, previousSlug: previousDoc?.slug }))
+  if (doc.slug) await revalidatePages(pathsForBrand({ slug: doc.slug, previousSlug: previousDoc?.slug }))
   return doc
 }
 
@@ -145,6 +154,12 @@ export const revalidateStore: CollectionAfterChangeHook = async ({ doc, previous
   const visibleChange = doc.name !== previousDoc?.name || doc.active !== previousDoc?.active || relId(doc.logo) !== relId(previousDoc?.logo)
   if (!visibleChange) return doc
   const offers = await req.payload.find({ collection: 'offers', where: { store: { equals: doc.id } }, depth: 0, pagination: false, req })
-  await revalidatePaths(await productsPaths(req, ids(offers.docs.map((offer) => offer.product))))
+  await revalidatePages(await productsPaths(req, ids(offers.docs.map((offer) => offer.product))))
+  return doc
+}
+
+export const revalidateAuthor: CollectionAfterChangeHook = async ({ doc, previousDoc }) => {
+  if (!doc.slug) return doc
+  await revalidatePages([authorPath(doc.slug), ...(previousDoc?.slug && previousDoc.slug !== doc.slug ? [authorPath(previousDoc.slug)] : [])])
   return doc
 }
