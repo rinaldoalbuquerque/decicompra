@@ -4,7 +4,9 @@ import React from 'react'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { inter, manrope } from '@/design/fonts'
+import { JsonLd } from '@/components/site/JsonLd'
 import { robotsMetadata } from '@/content/seo'
+import { siteLd } from '@/content/structured-data'
 import { getPublicTaxonomy, type PublicCategory } from '@/lib/data/lists'
 import { getPublicSettings } from '@/lib/data/settings'
 import { getSiteNavigation } from '@/lib/site-navigation'
@@ -43,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
         </main>
         <SiteFooter columns={navigation.footerColumns} />
+        <JsonLd data={siteLd(siteUrl())} />
       </body>
     </html>
   )

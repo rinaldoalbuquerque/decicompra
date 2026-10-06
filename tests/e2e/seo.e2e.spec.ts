@@ -68,3 +68,47 @@ test.describe('Sitemap', () => {
     expect((await request.get('/sitemaps/nao-existe.xml', { maxRedirects: 0 })).status()).toBe(404)
   })
 })
+
+test.describe('Dados estruturados', () => {
+  const typesOn = async (page: import('@playwright/test').Page, path: string) => {
+    await page.goto(path)
+    const blocks = await page.locator('script[type="application/ld+json"]').allTextContents()
+    return blocks.flatMap((text) => {
+      const data = JSON.parse(text) as { '@type': string } | { '@type': string }[]
+      return (Array.isArray(data) ? data : [data]).map((item) => item['@type'])
+    })
+  }
+
+  test('home: Organization e WebSite', async ({ page }) => {
+    expect(await typesOn(page, '/')).toEqual(expect.arrayContaining(['Organization', 'WebSite']))
+  })
+
+  test('produto em análise: Product (com Review) e BreadcrumbList; ficha sem Product', async ({ page }) => {
+    expect(await typesOn(page, '/produtos/demo-tv-alfa/')).toEqual(expect.arrayContaining(['Product', 'BreadcrumbList']))
+    expect(await typesOn(page, '/produtos/demo-tv-beta/')).not.toContain('Product')
+  })
+
+  test('Melhores: ItemList; guia, entenda e comparativo: Article', async ({ page }) => {
+    expect(await typesOn(page, '/melhores/demo-melhores-tvs/')).toEqual(expect.arrayContaining(['ItemList', 'BreadcrumbList']))
+    expect(await typesOn(page, '/guias/demo-guia-como-escolher-tv/')).toContain('Article')
+    expect(await typesOn(page, '/entenda/demo-entenda-oled-vs-qled/')).toContain('Article')
+    expect(await typesOn(page, '/comparar/demo-tv-alfa-vs-demo-tv-beta/')).toContain('Article')
+  })
+
+  test('hub: BreadcrumbList', async ({ page }) => {
+    expect(await typesOn(page, '/tvs-e-entretenimento/smart-tvs/')).toContain('BreadcrumbList')
+  })
+})
+
+test.describe('Imagem de compartilhamento', () => {
+  for (const path of ['/', '/produtos/demo-tv-alfa/', '/melhores/demo-melhores-tvs/', '/guias/demo-guia-como-escolher-tv/']) {
+    test(`og:image gerada em ${path}`, async ({ page, request }) => {
+      await page.goto(path)
+      const image = await page.locator('meta[property="og:image"]').first().getAttribute('content')
+      expect(image).toBeTruthy()
+      const response = await request.get(image!.replace(BASE, ''))
+      expect(response.status()).toBe(200)
+      expect(response.headers()['content-type']).toContain('image/png')
+    })
+  }
+})

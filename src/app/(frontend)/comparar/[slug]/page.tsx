@@ -23,6 +23,9 @@ import { getAdsEnabled } from '@/lib/data/settings'
 import { relId } from '@/lib/relations'
 import type { Category } from '@/payload-types'
 import { pageMetadata } from '@/lib/metadata'
+import { JsonLd } from '@/components/site/JsonLd'
+import { articleLd } from '@/content/structured-data'
+import { siteUrl } from '@/lib/site-url'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -88,6 +91,16 @@ export default async function ComparisonPage({ params }: Params) {
 
   return (
     <div className={`${PAGE_CONTAINER} pb-24 lg:pb-8`}>
+      <JsonLd
+        data={articleLd({
+          headline: content.title,
+          url: contentPath('comparativo', content.slug ?? slug),
+          description: content.summary,
+          datePublished: content.publishAt,
+          dateModified: content.reviewedAt,
+          siteUrl: siteUrl(),
+        })}
+      />
       <div className="mx-auto max-w-[960px]">
         <PageHeader
           breadcrumbs={[

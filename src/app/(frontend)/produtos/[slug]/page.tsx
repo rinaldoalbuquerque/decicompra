@@ -19,6 +19,9 @@ import { getProductSummaries, getPublicProduct, getSimilarProducts } from '@/lib
 import { getAdsEnabled } from '@/lib/data/settings'
 import { notFoundOrRedirect } from '@/lib/data/redirects'
 import { pageMetadata } from '@/lib/metadata'
+import { JsonLd } from '@/components/site/JsonLd'
+import { productReviewLd } from '@/content/structured-data'
+import { siteUrl } from '@/lib/site-url'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -83,6 +86,20 @@ export default async function ProductPage({ params }: Params) {
 
   return (
     <div className={`${PAGE_CONTAINER} pb-24 lg:pb-8`}>
+      {product.status === 'analise' && product.finalScore != null ? (
+        <JsonLd
+          data={productReviewLd({
+            name: product.name,
+            url: productPath(summary.slug),
+            image: summary.image?.src,
+            brand: summary.brandName,
+            score: product.finalScore,
+            verdict: product.verdict,
+            reviewedAt: product.reviewedAt,
+            siteUrl: siteUrl(),
+          })}
+        />
+      ) : null}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <PageHeader

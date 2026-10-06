@@ -21,6 +21,9 @@ import { relId } from '@/lib/relations'
 import type { Category } from '@/payload-types'
 import { notFoundOrRedirect } from '@/lib/data/redirects'
 import { pageMetadata } from '@/lib/metadata'
+import { JsonLd } from '@/components/site/JsonLd'
+import { itemListLd } from '@/content/structured-data'
+import { siteUrl } from '@/lib/site-url'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -75,6 +78,7 @@ export default async function BestPage({ params }: Params) {
 
   return (
     <div className={PAGE_CONTAINER}>
+      <JsonLd data={itemListLd(picks.map(({ summary }) => ({ name: summary.name, url: productPath(summary.slug) })), siteUrl())} />
       <div className="mx-auto max-w-[960px]">
         <PageHeader
           breadcrumbs={[

@@ -1,15 +1,18 @@
 import Link from 'next/link'
 
 import type { SpecAttribute } from '@/catalog/spec-template'
-import { categoryPath, CONTENT_PREFIX } from '@/content/paths'
+import { categoryPath, CONTENT_PREFIX, contentPath } from '@/content/paths'
 import { extractHeadings } from '@/content/rich-text'
 import { extractProductIds } from '@/content/rules'
+import { articleLd } from '@/content/structured-data'
 import { getProductSummaries } from '@/lib/data/products'
 import { getAdsEnabled } from '@/lib/data/settings'
+import { siteUrl } from '@/lib/site-url'
 import type { Category, Content } from '@/payload-types'
 
 import { AdSlot } from './AdSlot'
 import { PAGE_CONTAINER, PageHeader, QuickSummary, SourcesList } from './blocks'
+import { JsonLd } from './JsonLd'
 import { RelatedContents } from './RelatedContents'
 import { RichContent } from './RichContent'
 
@@ -30,6 +33,16 @@ export async function ContentArticle({ content }: { content: Content }) {
 
   return (
     <div className={PAGE_CONTAINER}>
+      <JsonLd
+        data={articleLd({
+          headline: content.title,
+          url: contentPath(content.type, content.slug ?? ''),
+          description: content.summary,
+          datePublished: content.publishAt,
+          dateModified: content.reviewedAt,
+          siteUrl: siteUrl(),
+        })}
+      />
       <article className="mx-auto max-w-[760px]">
         <PageHeader
           breadcrumbs={[
