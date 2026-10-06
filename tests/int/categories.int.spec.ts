@@ -48,6 +48,20 @@ describe('Categorias', () => {
     expect(JSON.stringify((error as ValidationError).data)).toContain('soma dos pesos precisa ser exatamente 100')
   })
 
+  it('categoria de 1º nível não usa endereço reservado do site; subcategoria pode', async () => {
+    const payload = await setup()
+    const error = await payload
+      .create({ collection: 'categories', data: { name: 'Marcas', slug: 'marcas' } })
+      .catch((e: unknown) => e)
+    expect(error).toBeInstanceOf(ValidationError)
+    expect(JSON.stringify((error as ValidationError).data)).toContain('Este endereço é usado pelo site')
+
+    const { category } = await createCategoryPair(payload, tracker)
+    const sub = await payload.create({ collection: 'categories', data: { name: `Marcas ${uid()}`, slug: `marcas`, parent: category.id } })
+    tracker.add('categories', sub)
+    expect(sub.slug).toBe('marcas')
+  })
+
   it('recusa 3 níveis', async () => {
     const payload = await setup()
     const { subcategory } = await createCategoryPair(payload, tracker)

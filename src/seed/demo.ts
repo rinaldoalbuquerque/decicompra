@@ -55,6 +55,10 @@ const scores = (values: number[]) =>
 export async function seedDemo(payload: Payload): Promise<{ created: boolean }> {
   await seedTaxonomy(payload)
   await seedAuthors(payload)
+  // Endereço antigo de demonstração (testes do redirecionamento 301)
+  const redirect = { from: '/produtos/demo-tv-antiga/', to: '/produtos/demo-tv-alfa/' }
+  const { totalDocs: hasRedirect } = await payload.count({ collection: 'redirects', where: { from: { equals: redirect.from } } })
+  if (hasRedirect === 0) await payload.create({ collection: 'redirects', data: redirect as never })
   const existing = await payload.count({ collection: 'products', where: { slug: { equals: 'demo-tv-alfa' } } })
   if (existing.totalDocs > 0) return { created: false }
 

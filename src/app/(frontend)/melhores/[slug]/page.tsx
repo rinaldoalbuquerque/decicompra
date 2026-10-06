@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 import type { Criterion } from '@/catalog/score'
 import type { SpecAttribute } from '@/catalog/spec-template'
@@ -12,13 +11,14 @@ import { RelatedContents } from '@/components/site/RelatedContents'
 import { RichContent } from '@/components/site/RichContent'
 import { ScoreBadge } from '@/components/site/ScoreBadge'
 import { StoreButtons } from '@/components/site/StoreButtons'
-import { categoryPath, productPath } from '@/content/paths'
+import { categoryPath, contentPath, productPath } from '@/content/paths'
 import { extractProductIds } from '@/content/rules'
 import { getPublicContent } from '@/lib/data/contents'
 import { getProductSummaries, type SummaryEntry } from '@/lib/data/products'
 import { getAdsEnabled } from '@/lib/data/settings'
 import { relId } from '@/lib/relations'
 import type { Category } from '@/payload-types'
+import { notFoundOrRedirect } from '@/lib/data/redirects'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function BestPage({ params }: Params) {
   const { slug } = await params
   const content = await getPublicContent('melhores', slug)
-  if (!content) notFound()
+  if (!content) return notFoundOrRedirect(contentPath('melhores', slug))
 
   const [summaries, adsEnabled] = await Promise.all([
     getProductSummaries(

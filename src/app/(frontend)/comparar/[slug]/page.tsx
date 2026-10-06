@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 
 import type { Criterion } from '@/catalog/score'
 import type { SpecAttribute } from '@/catalog/spec-template'
@@ -12,12 +12,13 @@ import { RelatedContents } from '@/components/site/RelatedContents'
 import { RichContent } from '@/components/site/RichContent'
 import { ScoreBadge } from '@/components/site/ScoreBadge'
 import { StoreButtons } from '@/components/site/StoreButtons'
-import { criterionWinners, specWinners } from '@/content/comparison'
-import { categoryPath, productPath } from '@/content/paths'
+import { canonicalComparisonSlug, criterionWinners, specWinners } from '@/content/comparison'
+import { categoryPath, contentPath, productPath } from '@/content/paths'
 import { extractProductIds } from '@/content/rules'
 import { formatScore } from '@/content/view-models'
 import { getPublicContent } from '@/lib/data/contents'
 import { getProductSummaries, type SummaryEntry } from '@/lib/data/products'
+import { notFoundOrRedirect } from '@/lib/data/redirects'
 import { getAdsEnabled } from '@/lib/data/settings'
 import { relId } from '@/lib/relations'
 import type { Category } from '@/payload-types'
@@ -41,7 +42,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function ComparisonPage({ params }: Params) {
   const { slug } = await params
   const content = await getPublicContent('comparativo', slug)
-  if (!content) notFound()
+  if (!content) {
+    // Produtos em outra ordem → endereço canônico (spec §3.2)
+    const canonical = canonicalComparisonSlug(slug)
+    if (canonical !== slug && (await getPublicContent('comparativo', canonical))) permanentRedirect(contentPath('comparativo', canonical))
+    return notFoundOrRedirect(contentPath('comparativo', slug))
+  }
 
   const ids = (content.comparedProducts ?? []).map((item) => Number(relId(item))).filter(Number.isFinite)
   const [summaries, adsEnabled] = await Promise.all([

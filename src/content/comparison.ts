@@ -7,6 +7,11 @@ export function comparisonSlug(productSlugs: string[]): string {
   return [...productSlugs].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).join('-vs-')
 }
 
+// Endereço pedido em outra ordem ("b-vs-a") → o canônico ("a-vs-b")
+export function canonicalComparisonSlug(slug: string): string {
+  return comparisonSlug(slug.split('-vs-'))
+}
+
 // Identifica o conjunto de produtos, para não haver dois comparativos iguais
 export function productSetKey(ids: number[]): string {
   return [...ids].sort((a, b) => a - b).join('-')

@@ -8,8 +8,22 @@ import { withContext } from '../../lib/hook-context'
 import { pick, relId } from '../../lib/relations'
 import { applySlugRedirect } from '../redirects/apply'
 
+// Primeiro segmento de endereços fixos do site: uma categoria de 1º nível (/{slug}/) não pode usá-los
+export const RESERVED_TOP_LEVEL_SLUGS = [
+  'produtos', 'melhores', 'comparar', 'guias', 'entenda', 'marcas', 'autores', 'categorias', 'busca', 'ir', 'admin', 'api',
+  'sobre', 'contato', 'como-avaliamos', 'politica-editorial', 'divulgacao-de-afiliados', 'publicidade-e-transparencia',
+  'privacidade', 'cookies', 'termos', '_next',
+]
+
 export const validateCategory: CollectionBeforeChangeHook = async ({ data, originalDoc, operation, req }) => {
   const errors: { message: string; path: string }[] = []
+  const slug = pick(data, originalDoc, 'slug')
+  if (relId(pick(data, originalDoc, 'parent')) === null && typeof slug === 'string' && RESERVED_TOP_LEVEL_SLUGS.includes(slug)) {
+    throw new ValidationError({
+      collection: 'categories',
+      errors: [{ path: 'slug', message: 'Este endereço é usado pelo site; escolha outro nome.' }],
+    })
+  }
   // Na criação o Payload também passa originalDoc (sem id); só a edição tem um documento existente
   const existingId = operation === 'update' ? relId(originalDoc?.id) : null
   const parentId = relId(pick(data, originalDoc, 'parent'))

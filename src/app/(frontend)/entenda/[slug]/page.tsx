@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 
 import { ContentArticle } from '@/components/site/ContentArticle'
+import { contentPath } from '@/content/paths'
 import { getPublicContent } from '@/lib/data/contents'
+import { notFoundOrRedirect } from '@/lib/data/redirects'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -23,6 +24,6 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function ExplainerPage({ params }: Params) {
   const { slug } = await params
   const content = await getPublicContent('entenda', slug)
-  if (!content) notFound()
+  if (!content) return notFoundOrRedirect(contentPath('entenda', slug))
   return <ContentArticle content={content} />
 }

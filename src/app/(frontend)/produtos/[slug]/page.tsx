@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 import type { SpecAttribute, SpecRow } from '@/catalog/spec-template'
 import { AdSlot } from '@/components/site/AdSlot'
@@ -12,12 +11,13 @@ import { ProductCard } from '@/components/site/ProductCard'
 import { ProductImage } from '@/components/site/ProductImage'
 import { RichContent } from '@/components/site/RichContent'
 import { ScoreBadge } from '@/components/site/ScoreBadge'
-import { categoryPath, contentPath } from '@/content/paths'
+import { categoryPath, contentPath, productPath } from '@/content/paths'
 import { extractProductIds } from '@/content/rules'
 import { formatScore } from '@/content/view-models'
 import { getRelatedForProduct } from '@/lib/data/contents'
 import { getProductSummaries, getPublicProduct, getSimilarProducts } from '@/lib/data/products'
 import { getAdsEnabled } from '@/lib/data/settings'
+import { notFoundOrRedirect } from '@/lib/data/redirects'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -55,7 +55,7 @@ function groupSpecs(template: SpecAttribute[], rows: SpecRow[]) {
 export default async function ProductPage({ params }: Params) {
   const { slug } = await params
   const page = await getPublicProduct(slug)
-  if (!page) notFound()
+  if (!page) return notFoundOrRedirect(productPath(slug))
   const { product, summary, variants, subcategory, category, template, criteria } = page
 
   const [related, similar, adsEnabled, reviewProducts] = await Promise.all([

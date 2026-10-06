@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { comparisonSlug, criterionWinners, productSetKey, specWinners } from '@/content/comparison'
+import { canonicalComparisonSlug, comparisonSlug, criterionWinners, productSetKey, specWinners } from '@/content/comparison'
 import {
   checkContentPublication,
   effectiveMetaDescription,
@@ -47,6 +47,13 @@ describe('comparativo: slug e conjunto', () => {
     expect(comparisonSlug(['samsung-s90d', 'lg-c4'])).toBe('lg-c4-vs-samsung-s90d')
     expect(comparisonSlug(['lg-c4', 'samsung-s90d'])).toBe('lg-c4-vs-samsung-s90d')
     expect(comparisonSlug(['c', 'a', 'b'])).toBe('a-vs-b-vs-c')
+  })
+
+  it('slug pedido em outra ordem vira o canônico', () => {
+    expect(canonicalComparisonSlug('b-vs-a')).toBe('a-vs-b')
+    expect(canonicalComparisonSlug('tv-c-vs-tv-a-vs-tv-b')).toBe('tv-a-vs-tv-b-vs-tv-c')
+    expect(canonicalComparisonSlug('a-vs-b')).toBe('a-vs-b')
+    expect(canonicalComparisonSlug('sem-versus')).toBe('sem-versus')
   })
 
   it('chave do conjunto ordena os ids numericamente', () => {
