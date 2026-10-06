@@ -8,6 +8,14 @@ export const CONTENT_PREFIX: Record<ContentType, string> = {
   entenda: '/entenda/',
 }
 
+// Nome do tipo no singular (cartões e listas)
+export const CONTENT_TYPE_LABEL: Record<ContentType, string> = {
+  melhores: 'Melhores',
+  comparativo: 'Comparativo',
+  guia: 'Guia',
+  entenda: 'Entenda',
+}
+
 export const productPath = (slug: string) => `/produtos/${slug}/`
 
 export const brandPath = (slug: string) => `/marcas/${slug}/`
