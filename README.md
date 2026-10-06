@@ -44,6 +44,7 @@ Nunca chame o arquivo de produção de `.env.production.local`: o Next carregari
 ## Dados de demonstração (só desenvolvimento)
 
 ```bash
-pnpm seed:demo
+DEMO_SEED=1 pnpm seed:demo            # Git Bash
+$env:DEMO_SEED=1; pnpm seed:demo      # PowerShell
 ```
-Cria 3 TVs, ofertas e um conteúdo de cada tipo (slugs `demo-…`) para ver as páginas funcionando. Recusa o banco de produção.
+A variável `DEMO_SEED=1` é a confirmação de que o banco é de desenvolvimento. Cria 3 TVs, ofertas e um conteúdo de cada tipo (slugs `demo-…`) para ver as páginas funcionando. Recusa o banco de produção.

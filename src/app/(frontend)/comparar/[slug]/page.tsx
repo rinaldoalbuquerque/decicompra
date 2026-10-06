@@ -8,6 +8,7 @@ import { AdSlot } from '@/components/site/AdSlot'
 import { PAGE_CONTAINER, PageHeader, Section, SourcesList } from '@/components/site/blocks'
 import { PriceRange } from '@/components/site/PriceRange'
 import { ProductImage } from '@/components/site/ProductImage'
+import { RelatedContents } from '@/components/site/RelatedContents'
 import { RichContent } from '@/components/site/RichContent'
 import { ScoreBadge } from '@/components/site/ScoreBadge'
 import { StoreButtons } from '@/components/site/StoreButtons'
@@ -257,6 +258,8 @@ export default async function ComparisonPage({ params }: Params) {
         </Section>
 
         <SourcesList sources={(content.sources ?? []).map((item) => ({ title: item.title, url: item.url }))} />
+
+        <RelatedContents content={content} />
       </div>
 
       {hasOffers ? (

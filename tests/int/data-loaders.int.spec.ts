@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { getPublicContent, getRelatedForProduct } from '@/lib/data/contents'
+import { getPublicContent, getRelatedContents, getRelatedForProduct } from '@/lib/data/contents'
 import { getProductSummaries, getPublicProduct } from '@/lib/data/products'
 import { seedDemo } from '@/seed/demo'
 
@@ -47,5 +47,13 @@ describe('Carga de dados das páginas', () => {
     const alfa = (await getPublicProduct('demo-tv-alfa'))!
     const related = await getRelatedForProduct(alfa.product.id)
     expect(related.map((c) => c.slug).sort()).toEqual(['demo-melhores-tvs', 'demo-tv-alfa-vs-demo-tv-beta'])
+  })
+
+  it('conteúdos relacionados: mesma subcategoria ou mesmos produtos, sem o próprio, e só públicos', async () => {
+    const comparison = (await getPublicContent('comparativo', 'demo-tv-alfa-vs-demo-tv-beta'))!
+    const related = await getRelatedContents(comparison)
+    const slugs = related.map((c) => c.slug)
+    expect(slugs).toEqual(expect.arrayContaining(['demo-melhores-tvs', 'demo-guia-como-escolher-tv']))
+    expect(slugs).not.toContain('demo-tv-alfa-vs-demo-tv-beta')
   })
 })

@@ -1,6 +1,9 @@
+import { cache } from 'react'
+
 import type { Criterion } from '@/catalog/score'
 import type { SpecAttribute, SpecRow } from '@/catalog/spec-template'
 import { toProductSummary, variantOffers, type OfferDoc, type ProductSummary, type VariantOffers } from '@/content/view-models'
+import { SLUG_PATTERN } from '@/lib/slug'
 import type { Category, Product, Variant } from '@/payload-types'
 
 import { getSitePayload } from './payload'
@@ -20,8 +23,10 @@ const PUBLIC = { overrideAccess: false } as const
 // Resumo + documento + especificações (produto e variante de referência) para tabelas
 export type SummaryEntry = ProductSummary & { product: Product; specRows: SpecRow[] }
 
-// Página de produto: só produtos fora de rascunho (o acesso público já filtra)
-export async function getPublicProduct(slug: string, now = new Date()): Promise<ProductPage | null> {
+// Página de produto: só produtos fora de rascunho (o acesso público já filtra).
+// cache(): generateMetadata e a página leem o mesmo produto numa só consulta.
+export const getPublicProduct = cache(async (slug: string, now = new Date()): Promise<ProductPage | null> => {
+  if (!SLUG_PATTERN.test(slug)) return null
   const payload = await getSitePayload()
   const { docs } = await payload.find({ collection: 'products', where: { slug: { equals: slug } }, depth: 2, limit: 1, ...PUBLIC })
   const product = docs[0]
@@ -49,7 +54,7 @@ export async function getPublicProduct(slug: string, now = new Date()): Promise<
     template: (subcategory?.specTemplate ?? []) as unknown as SpecAttribute[],
     criteria: (subcategory?.criteria ?? []) as unknown as Criterion[],
   }
-}
+})
 
 // Produtos públicos da mesma subcategoria com nota mais próxima (bloco "Alternativas")
 export async function getSimilarProducts(subcategoryId: number, excludeId: number, score: number | null, limit = 3) {

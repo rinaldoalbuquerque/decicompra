@@ -10,6 +10,7 @@ import type { Category, Content } from '@/payload-types'
 
 import { AdSlot } from './AdSlot'
 import { PAGE_CONTAINER, PageHeader, QuickSummary, SourcesList } from './blocks'
+import { RelatedContents } from './RelatedContents'
 import { RichContent } from './RichContent'
 
 const TYPE_LABEL: Record<Content['type'], string> = {
@@ -73,6 +74,8 @@ export async function ContentArticle({ content }: { content: Content }) {
         </div>
 
         <SourcesList sources={(content.sources ?? []).map((item) => ({ title: item.title, url: item.url }))} />
+
+        <RelatedContents content={content} />
 
         {subcategory?.slug ? (
           <p className="mt-10 border-t border-slate-200 pt-6">

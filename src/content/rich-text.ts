@@ -4,6 +4,31 @@ export type HeadingEntry = { id: string; text: string; level: 2 | 3 }
 
 type LexicalNode = { type?: string; tag?: string; text?: string; children?: LexicalNode[] }
 
+// Ids das seções fixas das páginas e do layout: um título do texto com o mesmo nome ganha sufixo
+// (ao criar uma seção com id novo numa página, inclua-o aqui)
+export const RESERVED_IDS = [
+  'conteudo',
+  'onde-comprar',
+  'onde-comprar-titulo',
+  'fontes-titulo',
+  'notas',
+  'especificacoes',
+  'analise',
+  'alternativas',
+  'faq',
+  'escolha',
+  'criterios',
+  'so-diferencas',
+  'conclusao',
+  'lojas',
+  'relacionados',
+  'comparacao',
+  'escolhas',
+  'tambem-consideramos',
+  'como-escolher',
+  'como-escolhemos',
+]
+
 export function headingId(text: string): string {
   return slugify(text) || 'secao'
 }
@@ -17,7 +42,8 @@ export function nodeText(node: LexicalNode): string {
 export function extractHeadings(doc: unknown): HeadingEntry[] {
   const root = (doc as { root?: LexicalNode } | null)?.root
   if (!root) return []
-  const used = new Map<string, number>()
+  // Section gera também o id do título ({id}-titulo)
+  const used = new Map<string, number>(RESERVED_IDS.flatMap((id) => [[id, 1] as const, [`${id}-titulo`, 1] as const]))
   const entries: HeadingEntry[] = []
   for (const node of root.children ?? []) {
     if (node.type !== 'heading' || (node.tag !== 'h2' && node.tag !== 'h3')) continue

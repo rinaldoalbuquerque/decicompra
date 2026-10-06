@@ -22,6 +22,9 @@ test.describe('Página de comparativo', () => {
     await expect(specs.getByLabel('Mostrar só as diferenças')).toBeVisible()
 
     await expect(page.getByRole('link', { name: 'Ver na Loja Demo B' }).first()).toHaveAttribute('href', /^\/ir\/\d+\/$/)
+
+    const related = page.locator('#relacionados')
+    await expect(related.getByRole('link', { name: /Melhores/ })).toHaveAttribute('href', '/melhores/demo-melhores-tvs/')
   })
 
   test('comparativo inexistente responde 404', async ({ page }) => {

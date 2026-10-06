@@ -58,6 +58,8 @@ jobs:
 
       - name: Dados de demonstração (para os testes de navegador)
         run: pnpm seed:demo
+        env:
+          DEMO_SEED: '1'
 
       - name: Build
         run: pnpm build

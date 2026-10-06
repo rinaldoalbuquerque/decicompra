@@ -23,6 +23,11 @@ describe('índice dos títulos', () => {
     ])
   })
 
+  it('não repete os ids das seções fixas das páginas', () => {
+    const doc = lexicalDoc([heading('h2', 'Como escolher'), heading('h2', 'FAQ'), heading('h2', 'Onde comprar'), heading('h2', 'Notas título')])
+    expect(extractHeadings(doc).map((entry) => entry.id)).toEqual(['como-escolher-2', 'faq-2', 'onde-comprar-2', 'notas-titulo-2'])
+  })
+
   it('aceita vazio', () => {
     expect(extractHeadings(null)).toEqual([])
   })

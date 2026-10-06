@@ -45,7 +45,7 @@ describe('RichContent', () => {
     ])
     const { container } = render(<RichContent data={doc} products={products as never} template={template} />)
 
-    expect(container.querySelector('h2#como-escolher')?.textContent).toBe('Como escolher')
+    expect(container.querySelector('h2#como-escolher-2')?.textContent).toBe('Como escolher')
     expect(screen.getByText('Meça a sala.')).toBeDefined()
     expect(screen.getAllByRole('link', { name: 'TV Um' }).length).toBeGreaterThan(0)
     expect(screen.queryByText('TV 99')).toBeNull()

@@ -26,6 +26,16 @@ test.describe('Página de produto', () => {
     await expect(page.locator('#onde-comprar')).toContainText('Indisponível no momento')
   })
 
+  test('produto em ficha não é indexado', async ({ page }) => {
+    await page.goto('/produtos/demo-tv-beta/')
+    await expect(page.locator('meta[name="robots"][content="noindex, follow"]')).toHaveCount(1)
+  })
+
+  test('endereço com caractere inválido responde 404', async ({ page }) => {
+    const invalid = await page.goto('/produtos/%00/')
+    expect(invalid?.status()).toBe(404)
+  })
+
   test('endereço inexistente responde 404', async ({ page }) => {
     const response = await page.goto('/produtos/nao-existe-demo/')
     expect(response?.status()).toBe(404)
