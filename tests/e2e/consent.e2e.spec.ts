@@ -55,4 +55,23 @@ test.describe('Aviso de cookies', () => {
     await expect.poll(() => requests.some((url) => url.includes('googletagmanager'))).toBe(true)
     expect(requests.some((url) => url.includes('googlesyndication'))).toBe(false)
   })
+
+  test('revogar o consentimento recarrega a página e nada mais vai para o Google', async ({ page }) => {
+    const requests = await watchGoogle(page)
+    await page.goto('/')
+    await page.getByRole('region', { name: 'Aviso de cookies' }).getByRole('button', { name: 'Aceitar todos' }).click()
+    await expect.poll(() => requests.length).toBeGreaterThan(0)
+
+    await page.getByRole('button', { name: 'Preferências de cookies' }).click()
+    const banner = page.getByRole('region', { name: 'Aviso de cookies' })
+    await banner.getByRole('checkbox', { name: /Estatísticas/ }).uncheck()
+    await banner.getByRole('checkbox', { name: /Publicidade/ }).uncheck()
+    await Promise.all([page.waitForEvent('load'), banner.getByRole('button', { name: 'Salvar escolhas' }).click()])
+
+    requests.length = 0
+    await page.getByRole('navigation', { name: 'Principal' }).getByRole('link', { name: 'Guias' }).click()
+    await page.waitForURL(/\/guias\/$/)
+    await page.waitForLoadState('networkidle')
+    expect(requests).toEqual([])
+  })
 })

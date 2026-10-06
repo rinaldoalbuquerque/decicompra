@@ -81,3 +81,13 @@ describe('AdSense (só com anúncios ligados e consentimento de publicidade)', (
     expect(container.querySelector('ins.adsbygoogle')).toBeNull()
   })
 })
+
+describe('GA4 configurado uma vez só', () => {
+  it('re-renderizações (nova navegação, novas props) não repetem o config (sem page_view em dobro)', () => {
+    document.cookie = consentCookie({ statistics: true, advertising: false })
+    const { rerender } = render(<ConsentManager ga4Id="G-UNICO12345" adsenseClientId={null} adSlots={[]} />)
+    rerender(<ConsentManager ga4Id="G-UNICO12345" adsenseClientId={null} adSlots={[]} />)
+    rerender(<ConsentManager ga4Id="G-UNICO12345" adsenseClientId={null} adSlots={[]} />)
+    expect(gtag.mock.calls.filter(([command]) => command === 'config')).toHaveLength(1)
+  })
+})

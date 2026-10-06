@@ -44,10 +44,26 @@ function fillAdSlots(clientId: string, slots: AdSlotConfig[]) {
   }
 }
 
+// IDs do GA4 já configurados nesta página: o config roda uma vez só. As navegações seguintes são
+// contadas pela medição otimizada do GA4 (mudanças de histórico), sem page_view em dobro.
+const configuredGa4 = new Set<string>()
+
+// Revogação: apaga os cookies do Google Analytics no domínio atual e no domínio-pai
+function clearAnalyticsCookies() {
+  const host = location.hostname
+  const domains = [host, host.split('.').slice(-2).join('.'), host.split('.').slice(-3).join('.')]
+  for (const name of document.cookie.split(';').map((part) => part.split('=')[0].trim())) {
+    if (!name.startsWith('_ga')) continue
+    for (const domain of new Set(domains)) document.cookie = `${name}=; Max-Age=0; Path=/; Domain=${domain}`
+    document.cookie = `${name}=; Max-Age=0; Path=/`
+  }
+}
+
 // Aplica a escolha: atualiza o Consent Mode e só então carrega o que foi permitido (spec §10.3)
 function apply(consent: Consent, ga4Id: string | null, adsenseClientId: string | null, adSlots: AdSlotConfig[]) {
   window.gtag?.('consent', 'update', consentSignals(consent))
-  if (consent.statistics && ga4Id) {
+  if (consent.statistics && ga4Id && !configuredGa4.has(ga4Id)) {
+    configuredGa4.add(ga4Id)
     loadScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4Id)}`)
     window.gtag?.('js', new Date())
     window.gtag?.('config', ga4Id)
@@ -95,7 +111,16 @@ export function ConsentManager({
   }, [ga4Id, adsenseClientId, adSlots, pathname])
 
   const decide = (choice: { statistics: boolean; advertising: boolean }) => {
+    const previous = readConsent(document.cookie)
     document.cookie = consentCookie(choice)
+    // Revogou o que já tinha permitido: os scripts do Google já carregados não "descarregam". Apaga os
+    // cookies de estatísticas e recarrega a página, que volta sem nada carregado.
+    if ((previous?.statistics && !choice.statistics) || (previous?.advertising && !choice.advertising)) {
+      window.gtag?.('consent', 'update', consentSignals({ ...choice, decidedAt: '' }))
+      clearAnalyticsCookies()
+      location.reload()
+      return
+    }
     const saved = readConsent(document.cookie)
     if (saved) apply(saved, ga4Id, adsenseClientId, adSlots)
     setOpen(false)
