@@ -48,3 +48,23 @@ test.describe('SEO', () => {
     expect(response.headers()['content-type']).toContain('text/plain')
   })
 })
+
+test.describe('Sitemap', () => {
+  test('índice em /sitemap.xml aponta um sitemap por tipo', async ({ request }) => {
+    const response = await request.get('/sitemap.xml', { maxRedirects: 0 })
+    expect(response.status()).toBe(200)
+    expect(response.headers()['content-type']).toContain('xml')
+    const xml = await response.text()
+    expect(xml).toContain('<sitemapindex')
+    expect(xml).toContain(`${BASE}/sitemaps/produtos.xml`)
+  })
+
+  test('sitemap de produtos lista só os indexáveis; tipo desconhecido dá 404', async ({ request }) => {
+    const response = await request.get('/sitemaps/produtos.xml', { maxRedirects: 0 })
+    expect(response.status()).toBe(200)
+    const xml = await response.text()
+    expect(xml).toContain(`<loc>${BASE}/produtos/demo-tv-alfa/</loc>`)
+    expect(xml).not.toContain('demo-tv-beta')
+    expect((await request.get('/sitemaps/nao-existe.xml', { maxRedirects: 0 })).status()).toBe(404)
+  })
+})
