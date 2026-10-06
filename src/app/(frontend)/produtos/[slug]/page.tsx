@@ -44,6 +44,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     // Ficha (sem análise) fica fora do Google (spec §5.5)
     noindex: product.status === 'ficha',
     type: product.status === 'analise' ? 'article' : 'website',
+    ownImage: true,
   })
 }
 

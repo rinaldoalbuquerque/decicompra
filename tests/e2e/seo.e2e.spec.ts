@@ -101,7 +101,18 @@ test.describe('Dados estruturados', () => {
 })
 
 test.describe('Imagem de compartilhamento', () => {
-  for (const path of ['/', '/produtos/demo-tv-alfa/', '/melhores/demo-melhores-tvs/', '/guias/demo-guia-como-escolher-tv/']) {
+  for (const path of [
+    '/',
+    '/produtos/demo-tv-alfa/',
+    '/melhores/demo-melhores-tvs/',
+    '/guias/demo-guia-como-escolher-tv/',
+    '/sobre/',
+    '/tvs-e-entretenimento/',
+    '/tvs-e-entretenimento/smart-tvs/',
+    '/marcas/demo-eletronicos/',
+    '/melhores/',
+    '/contato/',
+  ]) {
     test(`og:image gerada em ${path}`, async ({ page, request }) => {
       await page.goto(path)
       const image = await page.locator('meta[property="og:image"]').first().getAttribute('content')
@@ -109,6 +120,12 @@ test.describe('Imagem de compartilhamento', () => {
       const response = await request.get(image!.replace(BASE, ''))
       expect(response.status()).toBe(200)
       expect(response.headers()['content-type']).toContain('image/png')
+      await expect(page.locator('meta[name="twitter:image"]').first()).toHaveAttribute('content', /^http/)
     })
   }
+
+  test('produto usa a própria imagem (com nota), não a padrão', async ({ page }) => {
+    await page.goto('/produtos/demo-tv-alfa/')
+    await expect(page.locator('meta[property="og:image"]').first()).toHaveAttribute('content', /\/produtos\/demo-tv-alfa\/opengraph-image/)
+  })
 })

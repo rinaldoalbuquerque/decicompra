@@ -15,7 +15,7 @@ import { pageMetadata } from '@/lib/metadata'
 export const revalidate = 3600
 
 export const metadata: Metadata = {
-  ...pageMetadata({ path: '/', title: 'DeciCompra · Compare. Entenda. Decida.' }),
+  ...pageMetadata({ path: '/', title: 'DeciCompra · Compare. Entenda. Decida.', ownImage: true }),
   // Título completo, sem o sufixo "| DeciCompra" do modelo
   title: { absolute: 'DeciCompra · Compare. Entenda. Decida.' },
 }

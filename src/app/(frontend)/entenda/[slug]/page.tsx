@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     title: content.seo?.metaTitle || content.title,
     description: content.seo?.metaDescription || content.summary,
     type: 'article',
+    ownImage: true,
   })
 }
 
