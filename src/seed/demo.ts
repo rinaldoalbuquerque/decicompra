@@ -251,10 +251,14 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
   return { created }
 }
 
-// GA4 fictício para testar o aviso de cookies (só se nada foi configurado)
+// GA4 e e-mail de contato fictícios para os testes (só o que ainda não foi configurado)
 async function seedDemoSettings(payload: Payload): Promise<void> {
   const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
-  if (!settings.ga4Id) await payload.updateGlobal({ slug: 'site-settings', data: { ga4Id: 'G-DEMO12345' } })
+  const data = {
+    ...(settings.ga4Id ? {} : { ga4Id: 'G-DEMO12345' }),
+    ...(settings.contactEmail ? {} : { contactEmail: 'contato-demo@exemplo.com' }),
+  }
+  if (Object.keys(data).length > 0) await payload.updateGlobal({ slug: 'site-settings', data })
 }
 
 // Destaques da home com os dados de demonstração, só se nada foi escolhido no painel

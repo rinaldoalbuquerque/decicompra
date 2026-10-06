@@ -56,3 +56,14 @@ export const getPublicSettings = cache(async (): Promise<PublicSettings> => {
 export async function getAdsEnabled(): Promise<boolean> {
   return (await getPublicSettings()).adsEnabled
 }
+
+// E-mail que recebe o formulário de contato (campo restrito do painel: lido só no servidor)
+export async function getContactEmail(): Promise<string | null> {
+  try {
+    const payload = await getSitePayload()
+    const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
+    return settings.contactEmail?.trim() || null
+  } catch {
+    return null
+  }
+}

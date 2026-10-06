@@ -50,3 +50,26 @@ test.describe('Páginas institucionais', () => {
     await expect(page.getByRole('region', { name: 'Aviso de cookies' })).toBeVisible()
   })
 })
+
+test.describe('Contato', () => {
+  test('envia a mensagem (em teste o e-mail só é registrado no servidor)', async ({ page }) => {
+    await page.goto('/contato/')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Contato')
+    await page.getByLabel('Nome').fill('Maria Teste')
+    await page.getByLabel('E-mail').fill('maria@exemplo.com')
+    await page.getByLabel('Assunto').selectOption('Correção de conteúdo')
+    await page.getByLabel('Mensagem').fill('Encontrei um erro na tabela de especificações.')
+    await page.getByRole('button', { name: 'Enviar mensagem' }).click()
+    await expect(page.getByRole('main').getByRole('status')).toContainText('Mensagem enviada')
+  })
+
+  test('campos inválidos mostram os erros e mantêm o que foi digitado', async ({ page }) => {
+    await page.goto('/contato/')
+    await page.getByLabel('Nome').fill('Maria Teste')
+    await page.getByLabel('E-mail').fill('nao-e-email')
+    await page.getByRole('button', { name: 'Enviar mensagem' }).click()
+    await expect(page.getByRole('main').getByRole('alert')).toContainText('Confira os campos')
+    await expect(page.getByText('Informe um e-mail válido.')).toBeVisible()
+    await expect(page.getByLabel('Nome')).toHaveValue('Maria Teste')
+  })
+})
