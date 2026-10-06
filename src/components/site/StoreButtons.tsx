@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import type { OfferLink } from '@/content/view-models'
 
 // Botões de loja (spec §5.3 e §7.5): "Ver na {loja}", nunca "Comprar"; sempre com o aviso de comissão
@@ -21,9 +23,9 @@ export function StoreButtons({ offers, stale = false, compact = false }: { offer
       </ul>
       <p className="text-xs text-texto-suave">
         Podemos receber comissão.{' '}
-        <a href="/divulgacao-de-afiliados/" className="underline">
+        <Link href="/divulgacao-de-afiliados/" className="underline">
           Saiba mais
-        </a>
+        </Link>
       </p>
     </div>
   )

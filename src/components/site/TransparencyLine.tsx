@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { formatDate } from '@/lib/format'
 
 // Linha de transparência (spec §6): revisão, autoria e, quando há ofertas, o aviso de comissão
@@ -22,9 +24,9 @@ export function TransparencyLine({
         <>
           {' '}
           (
-          <a href="/divulgacao-de-afiliados/" className="underline">
+          <Link href="/divulgacao-de-afiliados/" className="underline">
             saiba mais
-          </a>
+          </Link>
           )
         </>
       ) : null}
