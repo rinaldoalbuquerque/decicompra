@@ -8,16 +8,17 @@ import { Pagination } from '@/components/site/Pagination'
 import { pageHref, parsePage } from '@/content/pagination'
 import { brandPath } from '@/content/paths'
 import { listBrands } from '@/lib/data/lists'
+import { pageMetadata } from '@/lib/metadata'
 
 type Props = { searchParams: Promise<{ pagina?: string | string[] }> }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const page = parsePage((await searchParams).pagina)
-  return {
+  return pageMetadata({
+    path: pageHref('/marcas/', page),
     title: page > 1 ? `Marcas — página ${page}` : 'Marcas',
     description: 'Marcas com produtos analisados e comparados pelo DeciCompra.',
-    ...(page > 1 ? { alternates: { canonical: pageHref('/marcas/', page) } } : {}),
-  }
+  })
 }
 
 // Índice de marcas (spec §6.8): só marcas com item público, em ordem alfabética

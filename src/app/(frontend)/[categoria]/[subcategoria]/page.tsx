@@ -13,6 +13,7 @@ import { categoryPath } from '@/content/paths'
 import { listAnalyzedProducts, listContents } from '@/lib/data/lists'
 import { notFoundOrRedirect } from '@/lib/data/redirects'
 import { getSubcategory } from '@/lib/data/taxonomy'
+import { pageMetadata } from '@/lib/metadata'
 
 type Props = {
   params: Promise<{ categoria: string; subcategoria: string }>
@@ -41,13 +42,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const { path, page, data } = await load(props)
   if (!data) return {}
   const { subcategory, empty } = data
-  return {
+  return pageMetadata({
+    path: pageHref(path, page),
     title: page > 1 ? `${subcategory.name} — página ${page}` : subcategory.name,
     description: subcategory.description ?? `Melhores, comparativos, guias e análises de ${subcategory.name}.`,
     // Sem item público: fora do Google (spec §3.1 e §5.5)
-    ...(empty ? { robots: { index: false, follow: true } } : {}),
-    ...(page > 1 ? { alternates: { canonical: pageHref(path, page) } } : {}),
-  }
+    noindex: empty,
+  })
 }
 
 // Subcategoria, o hub principal (spec §6.3)

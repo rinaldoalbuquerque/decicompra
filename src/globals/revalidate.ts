@@ -6,6 +6,9 @@ export const revalidateSiteLayout: GlobalAfterChangeHook = async ({ doc }) => {
   try {
     const { revalidatePath } = await import('next/cache')
     revalidatePath('/', 'layout')
+    // Fora do layout: dependem da chave de indexação e do ads.txt das Configurações
+    revalidatePath('/robots.txt')
+    revalidatePath('/ads.txt')
   } catch {
     // sem contexto do Next
   }

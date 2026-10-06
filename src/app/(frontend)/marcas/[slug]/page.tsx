@@ -13,6 +13,7 @@ import { isBrandIndexable } from '@/content/visibility'
 import { countBrandPublicItems, listAnalyzedProducts, listContents } from '@/lib/data/lists'
 import { getBrand } from '@/lib/data/people'
 import { notFoundOrRedirect } from '@/lib/data/redirects'
+import { pageMetadata } from '@/lib/metadata'
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ pagina?: string | string[] }> }
 
@@ -33,13 +34,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const { page, data } = await load(props)
   if (!data) return {}
   const { brand, publicItems } = data
-  return {
+  return pageMetadata({
+    path: pageHref(brandPath(brand.slug), page),
     title: page > 1 ? `${brand.name} — página ${page}` : brand.name,
     description: brand.description ?? `Produtos da ${brand.name} analisados pelo DeciCompra, com notas, comparativos e onde comprar.`,
     // Menos de 3 itens públicos: fora do Google (spec §5.5)
-    ...(isBrandIndexable(publicItems) ? {} : { robots: { index: false, follow: true } }),
-    ...(page > 1 ? { alternates: { canonical: pageHref(brandPath(brand.slug), page) } } : {}),
-  }
+    noindex: !isBrandIndexable(publicItems),
+  })
 }
 
 // Marca (spec §6.8): descrição, produtos analisados e conteúdos que a citam

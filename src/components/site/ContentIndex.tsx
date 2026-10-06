@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { pageHref, parsePage } from '@/content/pagination'
 import { CONTENT_PREFIX, type ContentType } from '@/content/paths'
 import { getPublicTaxonomy, listContents } from '@/lib/data/lists'
+import { pageMetadata } from '@/lib/metadata'
 
 import { CategoryFilter } from './CategoryFilter'
 import { ContentGrid } from './ContentCard'
@@ -35,12 +36,14 @@ async function load(type: ContentType, searchParams: IndexSearchParams) {
 export async function contentIndexMetadata(type: ContentType, searchParams: IndexSearchParams): Promise<Metadata> {
   const { page, categorySlug, category } = await load(type, searchParams)
   const copy = INDEX_COPY[type]
-  const extra: Record<string, string> = categorySlug ? { categoria: categorySlug } : {}
-  return {
+  // Categoria desconhecida (?categoria=qualquer-coisa): canônico no índice sem filtro e fora do Google
+  const extra: Record<string, string> = category ? { categoria: category.slug } : {}
+  return pageMetadata({
+    path: pageHref(CONTENT_PREFIX[type], page, extra),
     title: [copy.title, category?.name, page > 1 ? `página ${page}` : null].filter(Boolean).join(' — '),
     description: copy.intro,
-    ...(page > 1 || categorySlug ? { alternates: { canonical: pageHref(CONTENT_PREFIX[type], page, extra) } } : {}),
-  }
+    noindex: Boolean(categorySlug && !category),
+  })
 }
 
 // Índice de um tipo de conteúdo (spec §6.8): filtro por categoria, grade e paginação

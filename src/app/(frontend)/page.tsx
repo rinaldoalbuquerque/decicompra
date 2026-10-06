@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { Hero } from '@/components/home/Hero'
@@ -9,8 +10,15 @@ import { SubcategoryCard } from '@/components/site/SubcategoryCard'
 import { getHomeData } from '@/lib/data/home'
 import type { ContentCardData } from '@/lib/data/lists'
 import { getAdsEnabled } from '@/lib/data/settings'
+import { pageMetadata } from '@/lib/metadata'
 
 export const revalidate = 3600
+
+export const metadata: Metadata = {
+  ...pageMetadata({ path: '/', title: 'DeciCompra · Compare. Entenda. Decida.' }),
+  // Título completo, sem o sufixo "| DeciCompra" do modelo
+  title: { absolute: 'DeciCompra · Compare. Entenda. Decida.' },
+}
 
 const TRUST = [
   { title: 'Independente', text: 'Não vendemos produtos nem aceitamos pagamento por notas.' },

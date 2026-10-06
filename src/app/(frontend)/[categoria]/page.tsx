@@ -11,6 +11,7 @@ import { categoryPath, CONTENT_PREFIX } from '@/content/paths'
 import { getPublicTaxonomy, listContents } from '@/lib/data/lists'
 import { notFoundOrRedirect } from '@/lib/data/redirects'
 import { getCategory } from '@/lib/data/taxonomy'
+import { pageMetadata } from '@/lib/metadata'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -32,12 +33,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { categoria } = await params
   const data = await load(categoria)
   if (!data) return {}
-  return {
+  return pageMetadata({
+    path: categoryPath(data.category.slug),
     title: data.category.name,
     description: data.category.description ?? `Análises, comparativos e guias de ${data.category.name}.`,
     // Sem item público: fora do Google (spec §5.5)
-    ...(data.subcategories.length === 0 ? { robots: { index: false, follow: true } } : {}),
-  }
+    noindex: data.subcategories.length === 0,
+  })
 }
 
 // Categoria (spec §6.2): introdução, subcategorias, destaques e links para os índices

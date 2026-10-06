@@ -11,6 +11,7 @@ import { authorPath } from '@/content/paths'
 import { listContents } from '@/lib/data/lists'
 import { getAuthor } from '@/lib/data/people'
 import { notFoundOrRedirect } from '@/lib/data/redirects'
+import { pageMetadata } from '@/lib/metadata'
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ pagina?: string | string[] }> }
 
@@ -26,11 +27,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const { page, data } = await load(props)
   if (!data) return {}
   const { author } = data
-  return {
+  return pageMetadata({
+    path: pageHref(authorPath(author.slug), page),
     title: page > 1 ? `${author.name} — página ${page}` : author.name,
     description: author.bio ?? `Conteúdos assinados por ${author.name} no DeciCompra.`,
-    ...(page > 1 ? { alternates: { canonical: pageHref(authorPath(author.slug), page) } } : {}),
-  }
+  })
 }
 
 // Autor (spec §6.8): bio e conteúdos assinados

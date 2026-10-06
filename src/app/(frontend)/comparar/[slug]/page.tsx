@@ -22,6 +22,7 @@ import { notFoundOrRedirect } from '@/lib/data/redirects'
 import { getAdsEnabled } from '@/lib/data/settings'
 import { relId } from '@/lib/relations'
 import type { Category } from '@/payload-types'
+import { pageMetadata } from '@/lib/metadata'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -36,7 +37,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params
   const content = await getPublicContent('comparativo', slug)
   if (!content) return {}
-  return { title: content.seo?.metaTitle || content.title, description: content.seo?.metaDescription || content.summary || undefined }
+  return pageMetadata({
+    path: contentPath('comparativo', content.slug ?? slug),
+    title: content.seo?.metaTitle || content.title,
+    description: content.seo?.metaDescription || content.summary,
+    type: 'article',
+  })
 }
 
 export default async function ComparisonPage({ params }: Params) {

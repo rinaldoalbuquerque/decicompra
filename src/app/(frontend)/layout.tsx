@@ -4,16 +4,27 @@ import React from 'react'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { inter, manrope } from '@/design/fonts'
+import { robotsMetadata } from '@/content/seo'
 import { getPublicTaxonomy, type PublicCategory } from '@/lib/data/lists'
+import { getPublicSettings } from '@/lib/data/settings'
 import { getSiteNavigation } from '@/lib/site-navigation'
+import { siteUrl } from '@/lib/site-url'
 
 import './globals.css'
 
-export const metadata: Metadata = {
-  title: { default: 'DeciCompra · Compare. Entenda. Decida.', template: '%s | DeciCompra' },
-  description: 'Análises independentes, comparativos e guias de compra para você escolher melhor.',
-  // Provisório até o lançamento: a política de indexação definitiva é da Fase 3 (spec §5.5 e §11)
-  robots: { index: false, follow: false },
+// Metadados do site inteiro (spec §11). Indexação só depois do lançamento: a chave
+// "Liberar o site para o Google" das Configurações decide (até lá, noindex em tudo).
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getPublicSettings()
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: { default: 'DeciCompra · Compare. Entenda. Decida.', template: '%s | DeciCompra' },
+    description: 'Análises independentes, comparativos e guias de compra para você escolher melhor.',
+    robots: robotsMetadata(settings.indexingEnabled),
+    ...(settings.searchConsoleVerification ? { verification: { google: settings.searchConsoleVerification } } : {}),
+    openGraph: { siteName: 'DeciCompra', locale: 'pt_BR', type: 'website' },
+    twitter: { card: 'summary_large_image' },
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

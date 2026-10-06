@@ -18,6 +18,7 @@ import { getRelatedForProduct } from '@/lib/data/contents'
 import { getProductSummaries, getPublicProduct, getSimilarProducts } from '@/lib/data/products'
 import { getAdsEnabled } from '@/lib/data/settings'
 import { notFoundOrRedirect } from '@/lib/data/redirects'
+import { pageMetadata } from '@/lib/metadata'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -33,12 +34,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const page = await getPublicProduct(slug)
   if (!page) return {}
   const { product } = page
-  return {
+  return pageMetadata({
+    path: productPath(product.slug ?? slug),
     title: product.seo?.metaTitle || (product.status === 'analise' ? `${product.name}: análise` : product.name),
-    description: product.seo?.metaDescription || product.verdict || undefined,
+    description: product.seo?.metaDescription || product.verdict || `Ficha técnica, especificações e onde comprar ${product.name}.`,
     // Ficha (sem análise) fica fora do Google (spec §5.5)
-    ...(product.status === 'ficha' ? { robots: { index: false, follow: true } } : {}),
-  }
+    noindex: product.status === 'ficha',
+    type: product.status === 'analise' ? 'article' : 'website',
+  })
 }
 
 function groupSpecs(template: SpecAttribute[], rows: SpecRow[]) {

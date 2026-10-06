@@ -1247,10 +1247,26 @@ export interface SiteSetting {
     | null;
   adsTxt?: string | null;
   /**
-   * ex.: G-XXXXXXXXXX
+   * ex.: G-XXXXXXXXXX. Só carrega para quem aceitar os cookies de estatísticas.
    */
   ga4Id?: string | null;
   contactEmail?: string | null;
+  /**
+   * Desligado: nenhuma página aparece no Google (robots.txt bloqueia tudo). Ligue só no lançamento, com o domínio definitivo configurado.
+   */
+  indexingEnabled?: boolean | null;
+  /**
+   * Só o valor de "content" da meta tag que o Search Console mostra no método "Tag HTML".
+   */
+  searchConsoleVerification?: string | null;
+  /**
+   * Aparece na Política de Privacidade (LGPD).
+   */
+  responsibleName?: string | null;
+  /**
+   * Aparece na Política de Privacidade para pedidos de titulares (LGPD).
+   */
+  privacyEmail?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1317,6 +1333,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   adsTxt?: T;
   ga4Id?: T;
   contactEmail?: T;
+  indexingEnabled?: T;
+  searchConsoleVerification?: T;
+  responsibleName?: T;
+  privacyEmail?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

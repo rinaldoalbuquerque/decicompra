@@ -6,13 +6,15 @@ import { ListingPage } from '@/components/site/ListingPage'
 import { SubcategoryCard } from '@/components/site/SubcategoryCard'
 import { categoryPath } from '@/content/paths'
 import { getPublicTaxonomy } from '@/lib/data/lists'
+import { pageMetadata } from '@/lib/metadata'
 
 export const revalidate = 3600
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: '/categorias/',
   title: 'Categorias',
   description: 'Todas as categorias e subcategorias com análises, comparativos e guias no DeciCompra.',
-}
+})
 
 // Índice de categorias (spec §6.8): só o que tem item público (spec §3.1)
 export default async function CategoriesIndexPage() {
