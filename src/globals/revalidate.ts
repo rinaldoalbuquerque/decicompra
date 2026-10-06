@@ -11,3 +11,14 @@ export const revalidateSiteLayout: GlobalAfterChangeHook = async ({ doc }) => {
   }
   return doc
 }
+
+// A home lê o global "Página inicial": ao salvar, ela é refeita
+export const revalidateHomePage: GlobalAfterChangeHook = async ({ doc }) => {
+  try {
+    const { revalidatePath } = await import('next/cache')
+    revalidatePath('/')
+  } catch {
+    // sem contexto do Next
+  }
+  return doc
+}

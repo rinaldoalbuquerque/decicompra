@@ -1260,6 +1260,10 @@ export interface SiteSetting {
  */
 export interface HomePage {
   id: number;
+  /**
+   * Foto de produtos à direita do título. No celular ela não aparece.
+   */
+  heroImage?: (number | null) | Media;
   searchChips?:
     | {
         label: string;
@@ -1322,6 +1326,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
  * via the `definition` "home-page_select".
  */
 export interface HomePageSelect<T extends boolean = true> {
+  heroImage?: T;
   searchChips?:
     | T
     | {

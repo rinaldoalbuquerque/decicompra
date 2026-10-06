@@ -12,6 +12,7 @@ import * as migration_20261004_124804_contents from './20261004_124804_contents'
 import * as migration_20261004_124910_content_product_nullable from './20261004_124910_content_product_nullable';
 import * as migration_20261004_125434_globals from './20261004_125434_globals';
 import * as migration_20261005_233500_busca from './20261005_233500_busca';
+import * as migration_20261006_024550_home_hero from './20261006_024550_home_hero';
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20261005_233500_busca.up,
     down: migration_20261005_233500_busca.down,
     name: '20261005_233500_busca',
+  },
+  {
+    up: migration_20261006_024550_home_hero.up,
+    down: migration_20261006_024550_home_hero.down,
+    name: '20261006_024550_home_hero'
   },
 ];

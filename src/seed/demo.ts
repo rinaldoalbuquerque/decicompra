@@ -60,7 +60,10 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
   const { totalDocs: hasRedirect } = await payload.count({ collection: 'redirects', where: { from: { equals: redirect.from } } })
   if (hasRedirect === 0) await payload.create({ collection: 'redirects', data: redirect as never })
   const existing = await payload.count({ collection: 'products', where: { slug: { equals: 'demo-tv-alfa' } } })
-  if (existing.totalDocs > 0) return { created: false }
+  if (existing.totalDocs > 0) {
+    await seedDemoHome(payload)
+    return { created: false }
+  }
 
   const { docs: subs } = await payload.find({ collection: 'categories', where: { slug: { equals: 'smart-tvs' } }, limit: 1 })
   const subcategory = subs[0]
@@ -230,5 +233,31 @@ export async function seedDemo(payload: Payload): Promise<{ created: boolean }> 
     },
   })
 
+  await seedDemoHome(payload)
   return { created: true }
+}
+
+// Destaques da home com os dados de demonstração, só se nada foi escolhido no painel
+async function seedDemoHome(payload: Payload): Promise<void> {
+  const home = await payload.findGlobal({ slug: 'home-page', depth: 0 })
+  const chosen = [home.subcategoryCards, home.featuredComparisons, home.featuredBest, home.featuredGuides, home.featuredExplainers, home.searchChips]
+  if (chosen.some((list) => (list ?? []).length > 0)) return
+  const idOf = async (collection: 'contents' | 'categories', slug: string) =>
+    (await payload.find({ collection, where: { slug: { equals: slug } }, limit: 1, depth: 0 })).docs[0]?.id
+  const ids = async (collection: 'contents' | 'categories', slugs: string[]) =>
+    (await Promise.all(slugs.map((slug) => idOf(collection, slug)))).filter((id): id is number => typeof id === 'number')
+  await payload.updateGlobal({
+    slug: 'home-page',
+    data: {
+      searchChips: [
+        { label: 'Smart TVs', href: '/tvs-e-entretenimento/smart-tvs/' },
+        { label: 'TV Demo Alfa', href: '/produtos/demo-tv-alfa/' },
+      ],
+      subcategoryCards: await ids('categories', ['smart-tvs']),
+      featuredComparisons: await ids('contents', ['demo-tv-alfa-vs-demo-tv-beta']),
+      featuredBest: await ids('contents', ['demo-melhores-tvs']),
+      featuredGuides: await ids('contents', ['demo-guia-como-escolher-tv']),
+      featuredExplainers: await ids('contents', ['demo-entenda-oled-vs-qled']),
+    },
+  })
 }

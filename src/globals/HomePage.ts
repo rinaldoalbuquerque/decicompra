@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { adminOnly, anyone } from '../access'
+import { revalidateHomePage } from './revalidate'
 
 const contentsOfType = (type: string) => ({ type: { equals: type } })
 
@@ -10,7 +11,15 @@ export const HomePage: GlobalConfig = {
   label: 'Página inicial',
   admin: { group: 'Configurações' },
   access: { read: anyone, update: adminOnly },
+  hooks: { afterChange: [revalidateHomePage] },
   fields: [
+    {
+      name: 'heroImage',
+      label: 'Imagem do topo (só no computador)',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'Foto de produtos à direita do título. No celular ela não aparece.' },
+    },
     {
       name: 'searchChips',
       label: 'Sugestões abaixo da busca',

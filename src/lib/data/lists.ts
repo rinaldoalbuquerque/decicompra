@@ -82,6 +82,45 @@ export const getPublicTaxonomy = cachedList('taxonomia-publica', async (): Promi
     .filter((category) => category.subcategories.length > 0)
 })
 
+type CardDoc = {
+  id: number
+  type: ContentType
+  slug?: string | null
+  title: string
+  summary?: string | null
+  publishAt?: string | null
+  reviewedAt?: string | null
+  primarySubcategory?: number | { name?: string | null } | null
+}
+
+// Campos mínimos de um cartão (o nome da subcategoria vem populado)
+const CARD_QUERY = {
+  depth: 1,
+  select: { title: true, type: true, slug: true, summary: true, publishAt: true, reviewedAt: true, primarySubcategory: true },
+  populate: { categories: { name: true } },
+} as const
+
+const toContentCard = (doc: CardDoc): ContentCardData => ({
+  id: doc.id,
+  type: doc.type,
+  slug: doc.slug!,
+  title: doc.title,
+  summary: doc.summary ?? null,
+  publishAt: doc.publishAt ?? null,
+  reviewedAt: doc.reviewedAt ?? null,
+  href: contentPath(doc.type, doc.slug!),
+  subcategoryName: typeof doc.primarySubcategory === 'object' ? (doc.primarySubcategory?.name ?? null) : null,
+})
+
+// Cartões de conteúdos escolhidos (ex.: destaques da home), na ordem pedida; não públicos ficam de fora
+export const getContentCardsByIds = cachedList('cartoes', async (contentIds: number[]): Promise<ContentCardData[]> => {
+  if (contentIds.length === 0) return []
+  const payload = await getSitePayload()
+  const { docs } = await payload.find({ collection: 'contents', where: { id: { in: contentIds } }, pagination: false, ...CARD_QUERY, ...PUBLIC })
+  const byId = new Map(docs.filter((doc) => doc.slug).map((doc) => [doc.id, toContentCard(doc)]))
+  return contentIds.map((id) => byId.get(id)).filter((card): card is ContentCardData => Boolean(card))
+})
+
 export type ContentFilter = {
   type?: ContentType | ContentType[]
   subcategoryIds?: number[]
@@ -112,25 +151,11 @@ export const listContents = cachedList('conteudos', async (filter: ContentFilter
     sort: '-publishAt',
     page: filter.page,
     limit: perPage,
-    depth: 1,
-    select: { title: true, type: true, slug: true, summary: true, publishAt: true, reviewedAt: true, primarySubcategory: true },
-    populate: { categories: { name: true } },
+    ...CARD_QUERY,
     ...PUBLIC,
   })
   return {
-    docs: result.docs
-      .filter((doc) => doc.slug)
-      .map((doc) => ({
-        id: doc.id,
-        type: doc.type,
-        slug: doc.slug!,
-        title: doc.title,
-        summary: doc.summary ?? null,
-        publishAt: doc.publishAt ?? null,
-        reviewedAt: doc.reviewedAt ?? null,
-        href: contentPath(doc.type, doc.slug!),
-        subcategoryName: typeof doc.primarySubcategory === 'object' ? (doc.primarySubcategory?.name ?? null) : null,
-      })),
+    docs: result.docs.filter((doc) => doc.slug).map(toContentCard),
     total: result.totalDocs,
     page: filter.page,
     pages: pageCount(result.totalDocs, perPage),
