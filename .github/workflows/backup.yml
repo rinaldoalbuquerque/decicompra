@@ -46,7 +46,9 @@ jobs:
         if: steps.config.outputs.ready == 'true'
         run: |
           file="decicompra-$(date -u +%Y-%m-%d-%H%M).dump"
-          docker run --rm -e DATABASE_URL postgres:18 pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges > "$file"
+          # A conexão do Neon usa sslmode=verify-full: o pg_dump do contêiner precisa dos certificados raiz,
+          # que vêm do próprio servidor do GitHub (PGSSLROOTCERT)
+          docker run --rm -e DATABASE_URL             -e PGSSLROOTCERT=/etc/ssl/certs/ca-certificates.crt             -v /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro             postgres:18 sh -c 'pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges' > "$file"
           test -s "$file"
           echo "FILE=$file" >> "$GITHUB_ENV"
           ls -lh "$file"
