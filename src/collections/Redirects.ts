@@ -26,7 +26,8 @@ export const Redirects: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: '301',
-      options: [{ label: '301 (permanente)', value: '301' }],
+      // O site responde 308 (redirecionamento permanente moderno, tratado pelo Google como 301)
+      options: [{ label: 'Permanente (301/308)', value: '301' }],
     },
     {
       name: 'auto',

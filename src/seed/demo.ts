@@ -55,10 +55,14 @@ const scores = (values: number[]) =>
 export async function seedDemo(payload: Payload): Promise<{ created: boolean }> {
   await seedTaxonomy(payload)
   await seedAuthors(payload)
-  // Endereço antigo de demonstração (testes do redirecionamento 301)
-  const redirect = { from: '/produtos/demo-tv-antiga/', to: '/produtos/demo-tv-alfa/' }
-  const { totalDocs: hasRedirect } = await payload.count({ collection: 'redirects', where: { from: { equals: redirect.from } } })
-  if (hasRedirect === 0) await payload.create({ collection: 'redirects', data: redirect as never })
+  // Endereços antigos de demonstração (testes do redirecionamento 301)
+  for (const redirect of [
+    { from: '/produtos/demo-tv-antiga/', to: '/produtos/demo-tv-alfa/' },
+    { from: '/comparar/demo-tv-alfa-vs-demo-tv-velha/', to: '/comparar/demo-tv-alfa-vs-demo-tv-beta/' },
+  ]) {
+    const { totalDocs } = await payload.count({ collection: 'redirects', where: { from: { equals: redirect.from } } })
+    if (totalDocs === 0) await payload.create({ collection: 'redirects', data: redirect as never })
+  }
   // Idempotente por slug: só cria o que falta (um item apagado é recriado)
   let created = false
   const ensure = async <T extends { id: number }>(collection: 'products' | 'contents', slug: string, make: () => Promise<T>): Promise<T> => {

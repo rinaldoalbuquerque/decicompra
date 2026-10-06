@@ -63,4 +63,10 @@ describe('Busca', () => {
       expect(Object.values(result).every(Array.isArray)).toBe(true)
     }
   })
+
+  it('marca sem item público não aparece na busca', async () => {
+    const payload = await payloadPromise
+    const brand = await createBrand(payload, tracker)
+    expect(titles((await searchAll(brand.name)).brands)).not.toContain(brand.name)
+  })
 })

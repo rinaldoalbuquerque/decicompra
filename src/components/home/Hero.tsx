@@ -1,8 +1,9 @@
 import Link from 'next/link'
 
-import { ProductImage } from '@/components/site/ProductImage'
 import type { ImageSet } from '@/content/view-models'
 import type { SearchChip } from '@/lib/data/home'
+
+const EMPTY_GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
 
 const SHORTCUTS = [
   { icon: '🔎', label: 'Procurando um produto', href: '/categorias/', id: 'procurando' },
@@ -65,8 +66,19 @@ export function Hero({ chips, image }: { chips: SearchChip[]; image: ImageSet | 
         </div>
 
         {image ? (
+          // Só no computador (spec §6.1): no celular o <source> não casa e fica o GIF vazio embutido, sem download
           <div data-hero-image className="hidden lg:block">
-            <ProductImage image={image} sizes="(min-width: 1024px) 520px, 0px" priority />
+            <picture>
+              <source media="(min-width: 1024px)" srcSet={image.srcSet || image.src} sizes="520px" />
+              <img
+                src={EMPTY_GIF}
+                alt={image.alt}
+                width={image.width || undefined}
+                height={image.height || undefined}
+                fetchPriority="high"
+                className="h-auto w-full rounded-2xl"
+              />
+            </picture>
           </div>
         ) : null}
       </div>

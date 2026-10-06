@@ -154,4 +154,16 @@ describe('Atualização das listas', () => {
     await payload.update({ collection: 'contents', id: docs[0].id, data: { summary: docs[0].summary } })
     expect(tags).not.toContain('taxonomia')
   })
+
+  it('apagar uma marca ou um autor atualiza a página dele e as listas', async () => {
+    const payload = await payloadPromise
+    const brand = await payload.create({ collection: 'brands', data: { name: `Marca apagar ${uid()}` } })
+    const author = await payload.create({ collection: 'authors', data: { name: `Autor apagar ${uid()}` } })
+    paths.length = 0
+    tags.length = 0
+    await payload.delete({ collection: 'brands', id: brand.id })
+    await payload.delete({ collection: 'authors', id: author.id })
+    expect(paths).toEqual(expect.arrayContaining([`/marcas/${brand.slug}/`, '/marcas/', `/autores/${author.slug}/`]))
+    expect(tags).toContain('listas')
+  })
 })

@@ -55,7 +55,7 @@ export default async function ComparisonPage({ params }: Params) {
     // Produtos em outra ordem → endereço canônico (spec §3.2)
     const canonical = canonicalComparisonSlug(slug)
     if (canonical !== slug && (await getPublicContent('comparativo', canonical))) permanentRedirect(contentPath('comparativo', canonical))
-    return notFoundOrRedirect(contentPath('comparativo', slug))
+    return notFoundOrRedirect(contentPath('comparativo', slug), contentPath('comparativo', canonical))
   }
 
   const ids = (content.comparedProducts ?? []).map((item) => Number(relId(item))).filter(Number.isFinite)

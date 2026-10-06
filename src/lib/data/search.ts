@@ -3,7 +3,7 @@ import { sql, type PostgresAdapter } from '@payloadcms/db-postgres'
 import { categoryPath, contentPath, productPath, brandPath, type ContentType } from '@/content/paths'
 import { toTsQuery } from '@/content/search-query'
 
-import { getPublicTaxonomy } from './lists'
+import { getPublicTaxonomy, listBrands } from './lists'
 import { getSitePayload } from './payload'
 
 const PUBLIC = { overrideAccess: false } as const
@@ -74,7 +74,8 @@ export async function searchAll(term: string, { perGroup = 12 }: { perGroup?: nu
     contentIds.length
       ? payload.find({ collection: 'contents', where: { id: { in: contentIds } }, depth: 0, pagination: false, select: { title: true, slug: true, type: true }, ...PUBLIC })
       : null,
-    brandIds.length ? payload.find({ collection: 'brands', where: { id: { in: brandIds } }, depth: 0, pagination: false, select: { name: true, slug: true }, ...PUBLIC }) : null,
+    // Só marcas com item público (mesma regra de /marcas/): sem isso a busca levaria a uma página vazia
+    brandIds.length ? listBrands({ page: 1, perPage: 100_000 }) : null,
     subcategoryIds.length ? getPublicTaxonomy() : null,
   ])
 
@@ -94,9 +95,8 @@ export async function searchAll(term: string, { perGroup = 12 }: { perGroup?: nu
   groups.articles = byType(['guia', 'entenda'])
 
   groups.brands = inOrder(brandIds, brands?.docs ?? [])
-    .filter((doc) => doc.slug)
     .slice(0, perGroup)
-    .map((doc) => ({ id: doc.id, title: doc.name, href: brandPath(doc.slug!) }))
+    .map((doc) => ({ id: doc.id, title: doc.name, href: brandPath(doc.slug) }))
 
   // Só subcategorias com item público (spec §3.1)
   const publicSubs = new Map(

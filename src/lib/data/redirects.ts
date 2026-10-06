@@ -10,9 +10,12 @@ export async function findRedirect(path: string): Promise<string | null> {
   return to && to !== path ? to : null
 }
 
-// No lugar de notFound() nas páginas públicas: endereço antigo → 301, senão 404
-export async function notFoundOrRedirect(path: string): Promise<never> {
-  const to = await findRedirect(path)
-  if (to) permanentRedirect(to)
+// No lugar de notFound() nas páginas públicas: endereço antigo → 301, senão 404.
+// `alternatives`: outros endereços equivalentes a consultar (ex.: o comparativo na ordem canônica).
+export async function notFoundOrRedirect(path: string, ...alternatives: string[]): Promise<never> {
+  for (const candidate of [path, ...alternatives]) {
+    const to = await findRedirect(candidate)
+    if (to && to !== path) permanentRedirect(to)
+  }
   notFound()
 }

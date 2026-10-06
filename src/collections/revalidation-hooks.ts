@@ -181,3 +181,11 @@ export const revalidateAuthor: CollectionAfterChangeHook = async ({ doc, previou
   await revalidatePages([authorPath(doc.slug), ...(previousDoc?.slug && previousDoc.slug !== doc.slug ? [authorPath(previousDoc.slug)] : [])])
   return doc
 }
+
+export const revalidateDeletedBrand: CollectionAfterDeleteHook = async ({ doc }) => {
+  if (doc.slug) await revalidatePages(pathsForBrand({ slug: doc.slug }))
+}
+
+export const revalidateDeletedAuthor: CollectionAfterDeleteHook = async ({ doc }) => {
+  if (doc.slug) await revalidatePages([authorPath(doc.slug)])
+}
