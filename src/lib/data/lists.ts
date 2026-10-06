@@ -170,6 +170,33 @@ export const listAnalyzedProducts = cachedList(
   },
 )
 
+export type BrandListItem = { id: number; slug: string; name: string; publicItems: number }
+
+// Marcas com ao menos 1 item público (produto em análise ou conteúdo que cita produto dela), A–Z
+export const listBrands = cachedList('marcas', async (filter: { page: number; perPage?: number }): Promise<Paged<BrandListItem>> => {
+  const perPage = filter.perPage ?? PER_PAGE
+  const payload = await getSitePayload()
+  const [brands, products, contents] = await Promise.all([
+    payload.find({ collection: 'brands', depth: 0, pagination: false, select: { name: true, slug: true }, ...PUBLIC }),
+    payload.find({ collection: 'products', depth: 0, pagination: false, select: { brand: true, status: true }, ...PUBLIC }),
+    payload.find({ collection: 'contents', depth: 0, pagination: false, select: { referencedProducts: true }, ...PUBLIC }),
+  ])
+  const brandOfProduct = new Map(products.docs.map((product) => [product.id, Number(relId(product.brand))]))
+  const items = new Map<number, number>()
+  const add = (brandId: number) => items.set(brandId, (items.get(brandId) ?? 0) + 1)
+  for (const product of products.docs) if (product.status === 'analise') add(brandOfProduct.get(product.id)!)
+  for (const content of contents.docs) {
+    const cited = new Set(ids(content.referencedProducts ?? []).map((id) => brandOfProduct.get(id)).filter((id): id is number => id !== undefined))
+    for (const brandId of cited) add(brandId)
+  }
+  const all = brands.docs
+    .filter((brand) => brand.slug && items.has(brand.id))
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+    .map((brand) => ({ id: brand.id, slug: brand.slug!, name: brand.name, publicItems: items.get(brand.id)! }))
+  const start = (filter.page - 1) * perPage
+  return { docs: all.slice(start, start + perPage), total: all.length, page: filter.page, pages: pageCount(all.length, perPage) }
+})
+
 // Itens públicos que contam para indexar a marca (spec §5.5)
 export const countBrandPublicItems = cachedList('itens-da-marca', async (brandId: number): Promise<number> => {
   const payload = await getSitePayload()
