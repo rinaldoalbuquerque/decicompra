@@ -164,6 +164,10 @@ export const revalidateBrand: CollectionAfterChangeHook = async ({ doc, previous
 // Nome, logo ou ativação da loja mudam os botões de todos os produtos com ofertas dela.
 // Outras edições (programa de afiliados, observações) não aparecem nas páginas.
 export const revalidateStore: CollectionAfterChangeHook = async ({ doc, previousDoc, operation, req }) => {
+  // A página "Divulgação de afiliados" lista as lojas ativas
+  if (operation === 'create' || doc.name !== previousDoc?.name || doc.active !== previousDoc?.active) {
+    await revalidatePages(['/divulgacao-de-afiliados/'])
+  }
   if (operation !== 'update') return doc
   const visibleChange = doc.name !== previousDoc?.name || doc.active !== previousDoc?.active || relId(doc.logo) !== relId(previousDoc?.logo)
   if (!visibleChange) return doc

@@ -3,6 +3,7 @@ import { relId } from '@/lib/relations'
 import { SLUG_PATTERN } from '@/lib/slug'
 
 import { cachedList } from './cache'
+import { getPublicTaxonomy } from './lists'
 import { getSitePayload } from './payload'
 
 const PUBLIC = { overrideAccess: false } as const
@@ -49,3 +50,27 @@ export const getSubcategory = cachedList('subcategoria', async (categorySlug: st
   if (!doc || Number(relId(doc.parent)) !== category.id) return null
   return { ...toInfo(doc), criteria: (doc.criteria ?? []) as unknown as Criterion[], parent: category }
 })
+
+// Critérios e pesos das subcategorias com item público (página "Como avaliamos")
+export const getPublicCriteria = cachedList(
+  'criterios-publicos',
+  async (): Promise<{ id: number; name: string; categoryName: string; criteria: Criterion[] }[]> => {
+    const taxonomy = await getPublicTaxonomy()
+    const subs = taxonomy.flatMap((category) => category.subcategories.map((sub) => ({ id: sub.id, categoryName: category.name })))
+    if (subs.length === 0) return []
+    const payload = await getSitePayload()
+    const { docs } = await payload.find({
+      collection: 'categories',
+      where: { id: { in: subs.map((sub) => sub.id) } },
+      depth: 0,
+      pagination: false,
+      select: { name: true, criteria: true },
+      ...PUBLIC,
+    })
+    const byId = new Map(docs.map((doc) => [doc.id, doc]))
+    return subs
+      .map((sub) => ({ sub, doc: byId.get(sub.id) }))
+      .filter((item) => (item.doc?.criteria ?? []).length > 0)
+      .map(({ sub, doc }) => ({ id: sub.id, name: doc!.name, categoryName: sub.categoryName, criteria: doc!.criteria as unknown as Criterion[] }))
+  },
+)

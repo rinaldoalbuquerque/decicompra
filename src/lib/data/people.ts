@@ -52,3 +52,18 @@ export const getAuthor = cachedList('autor', async (slug: string): Promise<Autho
   if (!author) return null
   return { id: author.id, slug: author.slug ?? slug, name: author.name, bio: author.bio ?? null, image: toImageSet(author.image) }
 })
+
+// Lojas ativas (página "Divulgação de afiliados")
+export const getActiveStores = cachedList('lojas-ativas', async (): Promise<{ id: number; name: string; affiliateProgram: string | null }[]> => {
+  const payload = await getSitePayload()
+  const { docs } = await payload.find({
+    collection: 'stores',
+    where: { active: { not_equals: false } },
+    sort: 'name',
+    depth: 0,
+    pagination: false,
+    select: { name: true, affiliateProgram: true },
+    ...PUBLIC,
+  })
+  return docs.map((doc) => ({ id: doc.id, name: doc.name, affiliateProgram: doc.affiliateProgram ?? null }))
+})
