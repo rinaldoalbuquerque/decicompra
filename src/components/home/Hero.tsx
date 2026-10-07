@@ -83,7 +83,7 @@ export function Hero({ chips, image, background = null }: { chips: SearchChip[];
               aria-label="Buscar"
               placeholder="Qual produto você procura?"
               maxLength={80}
-              className="min-w-0 flex-1 rounded-lg border border-white/30 bg-azul-profundo/50 px-4 py-3 text-branco shadow-lg backdrop-blur-sm transition placeholder:text-blue-200 hover:border-white/50 focus:border-branco focus:bg-azul-profundo/70"
+              className="min-w-0 flex-1 rounded-lg border border-white/30 bg-azul-profundo/50 px-4 py-3 text-branco shadow-lg backdrop-blur-sm transition placeholder:text-blue-200 hover:border-white/50 focus:bg-azul-profundo/70 focus:outline-none focus-visible:outline-none"
             />
             <button type="submit" className="rounded-lg bg-verde px-6 py-3 font-semibold text-azul-profundo shadow-lg hover:brightness-110">
               Buscar
