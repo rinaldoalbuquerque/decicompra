@@ -1,4 +1,5 @@
 import { airFryers } from './air-fryers'
+import { arCondicionado } from './ar-condicionado'
 import { furadeiras } from './furadeiras'
 import { notebooks } from './notebooks'
 import { smartTvs } from './smart-tvs'
@@ -13,4 +14,5 @@ export const EDITORIAL_PACKS: Record<string, EditorialPack> = {
   'smart-tvs': smartTvs,
   notebooks,
   'furadeiras-e-parafusadeiras': furadeiras,
+  'ar-condicionado': arCondicionado,
 }
