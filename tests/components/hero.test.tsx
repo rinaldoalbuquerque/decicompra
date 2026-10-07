@@ -19,12 +19,12 @@ describe('Hero: imagem só no computador', () => {
 })
 
 describe('Hero: busca, atalhos e fundo', () => {
-  it('o campo de busca tem fundo claro e texto escuro (legível sobre o azul)', () => {
+  it('o campo de busca é azul translúcido com texto branco e borda branca ao focar (como a busca do cabeçalho)', () => {
     render(<Hero chips={[]} image={null} />)
-    const input = screen.getByRole('searchbox', { name: 'Buscar' })
-    expect(input.className).toContain('bg-branco')
-    expect(input.className).toContain('text-texto')
-    expect(input.className).toContain('placeholder:text-texto-suave')
+    const classes = screen.getByRole('searchbox', { name: 'Buscar' }).className.split(/\s+/)
+    expect(classes).toEqual(expect.arrayContaining(['bg-azul-profundo/50', 'backdrop-blur-sm', 'border', 'border-white/30', 'focus:border-branco', 'text-branco', 'placeholder:text-blue-200']))
+    expect(classes).not.toContain('bg-branco')
+    expect(classes).not.toContain('text-texto')
   })
 
   it('os três atalhos usam ícones desenhados (SVG), não emojis', () => {
