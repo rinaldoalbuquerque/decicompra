@@ -14,6 +14,7 @@ import * as migration_20261004_125434_globals from './20261004_125434_globals';
 import * as migration_20261005_233500_busca from './20261005_233500_busca';
 import * as migration_20261006_024550_home_hero from './20261006_024550_home_hero';
 import * as migration_20261006_120623_seo_privacidade from './20261006_120623_seo_privacidade';
+import * as migration_20261007_032818_home_fundo from './20261007_032818_home_fundo';
 
 export const migrations = [
   {
@@ -94,6 +95,11 @@ export const migrations = [
   {
     up: migration_20261006_120623_seo_privacidade.up,
     down: migration_20261006_120623_seo_privacidade.down,
-    name: '20261006_120623_seo_privacidade'
+    name: '20261006_120623_seo_privacidade',
+  },
+  {
+    up: migration_20261007_032818_home_fundo.up,
+    down: migration_20261007_032818_home_fundo.down,
+    name: '20261007_032818_home_fundo'
   },
 ];

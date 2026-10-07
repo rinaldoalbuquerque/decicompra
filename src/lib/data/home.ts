@@ -22,6 +22,7 @@ export type HomeSubcategory = { id: number; slug: string; name: string; descript
 
 export type HomeData = {
   heroImage: ImageSet | null
+  heroBackground: ImageSet | null
   chips: SearchChip[]
   subcategories: HomeSubcategory[]
   categories: { slug: string; name: string; href: string }[]
@@ -53,6 +54,7 @@ export async function getHomeData(): Promise<HomeData> {
   )
   return {
     heroImage: toImageSet(home.heroImage),
+    heroBackground: toImageSet(home.heroBackground),
     chips: (home.searchChips ?? []).filter((chip) => chip.label && chip.href).map((chip) => ({ label: chip.label, href: chip.href })),
     subcategories: idList(home.subcategoryCards)
       .map((id) => publicSubs.get(id))

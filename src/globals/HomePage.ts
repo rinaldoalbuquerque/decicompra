@@ -21,6 +21,16 @@ export const HomePage: GlobalConfig = {
       admin: { description: 'Foto de produtos à direita do título. No celular ela não aparece.' },
     },
     {
+      name: 'heroBackground',
+      label: 'Imagem de fundo do topo',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Foto que cobre todo o fundo do topo (computador e celular). Use foto deitada, de 1920 × 1080 px. Ela fica escurecida para o texto continuar legível.',
+      },
+    },
+    {
       name: 'searchChips',
       label: 'Sugestões abaixo da busca',
       type: 'array',

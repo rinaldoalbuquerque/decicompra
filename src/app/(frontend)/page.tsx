@@ -47,7 +47,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero chips={data.chips} image={data.heroImage} />
+      <Hero chips={data.chips} image={data.heroImage} background={data.heroBackground} />
 
       <div className={PAGE_CONTAINER}>
         {data.subcategories.length + data.categories.length > 0 ? (

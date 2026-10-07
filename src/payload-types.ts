@@ -1280,6 +1280,10 @@ export interface HomePage {
    * Foto de produtos à direita do título. No celular ela não aparece.
    */
   heroImage?: (number | null) | Media;
+  /**
+   * Foto que cobre todo o fundo do topo (computador e celular). Use foto deitada, de 1920 × 1080 px. Ela fica escurecida para o texto continuar legível.
+   */
+  heroBackground?: (number | null) | Media;
   searchChips?:
     | {
         label: string;
@@ -1347,6 +1351,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
  */
 export interface HomePageSelect<T extends boolean = true> {
   heroImage?: T;
+  heroBackground?: T;
   searchChips?:
     | T
     | {
