@@ -12,9 +12,9 @@ let previousTemplate: unknown
 
 async function cleanup() {
   const payload = await payloadPromise
-  const contentSlugs = [...pack.contents.map((content) => content.slug).filter(Boolean), COMPARISON] as string[]
+  const contentSlugs = [...pack.contents.map((content) => content.slug).filter(Boolean), COMPARISON, 'mondial-nome-antigo-vs-philips-walita-serie-2000-xl-na230'] as string[]
   await payload.delete({ collection: 'contents', where: { slug: { in: contentSlugs } } })
-  await payload.delete({ collection: 'products', where: { slug: { in: pack.products.map((product) => product.slug) } } })
+  await payload.delete({ collection: 'products', where: { slug: { in: [...pack.products.map((product) => product.slug), 'mondial-nome-antigo'] } } })
 }
 
 beforeAll(async () => {
@@ -90,5 +90,46 @@ describe('Pacote editorial: air fryers', () => {
     await seedEditorialPack(payload, pack)
     const again = await payload.findByID({ collection: 'products', id: docs[0].id })
     expect(again.verdict).toContain('editado pelo responsável')
+  })
+})
+
+describe('Correção de um pacote já carregado', () => {
+  it('atualiza só o que ninguém editou depois do carregamento; renomeia o slug do produto', async () => {
+    const payload = await payloadPromise
+    const { refreshFromPack } = await import('@/seed/editorial')
+    await seedEditorialPack(payload, pack)
+    const edited = (await payload.find({ collection: 'products', where: { slug: { equals: 'britania-bfr50' } }, limit: 1 })).docs[0]
+    // Simula uma edição do responsável bem depois do carregamento
+    await payload.update({
+      collection: 'products',
+      id: edited.id,
+      data: { verdict: 'Editado pelo responsável e que precisa continuar assim depois da correção do pacote.' },
+    })
+    await payload.db.updateOne({ collection: 'products', id: edited.id, data: { updatedAt: new Date(Date.now() + 10 * 60_000).toISOString() } })
+
+    const renamed = (await payload.find({ collection: 'products', where: { slug: { equals: 'mondial-grand-family-afn-50-bi' } }, limit: 1 })).docs[0]
+    await payload.update({ collection: 'products', id: renamed.id, data: { slug: 'mondial-nome-antigo' } })
+    // Rascunho carregado horas antes e nunca editado: criação e última gravação antigas
+    const hoursAgo = new Date(Date.now() - 3 * 60 * 60_000).toISOString()
+    await payload.db.updateOne({ collection: 'products', id: renamed.id, data: { createdAt: hoursAgo, updatedAt: hoursAgo } })
+
+    const fixedPack = {
+      ...pack,
+      products: pack.products.map((product) =>
+        product.slug === 'britania-bfr50' || product.slug === 'mondial-grand-family-afn-50-bi' ? { ...product, recommendedFor: 'Texto corrigido pelo pacote.' } : product,
+      ),
+    }
+    const report = await refreshFromPack(payload, fixedPack, {
+      products: ['britania-bfr50', 'mondial-grand-family-afn-50-bi'],
+      renamedProducts: { 'mondial-nome-antigo': 'mondial-grand-family-afn-50-bi' },
+    })
+    expect(report.updated).toContain('produto:mondial-grand-family-afn-50-bi')
+    expect(report.skipped).toContain('produto:britania-bfr50 (editado depois do carregamento)')
+
+    const after = await payload.findByID({ collection: 'products', id: renamed.id })
+    expect(after.slug).toBe('mondial-grand-family-afn-50-bi')
+    expect(after.recommendedFor).toBe('Texto corrigido pelo pacote.')
+    const untouched = await payload.findByID({ collection: 'products', id: edited.id })
+    expect(untouched.verdict).toContain('Editado pelo responsável')
   })
 })

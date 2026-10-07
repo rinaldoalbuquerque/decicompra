@@ -5,6 +5,9 @@ import type { EditorialPack, Source } from './types'
 // reputação no Reclame Aqui. Revisão humana obrigatória antes de publicar (spec §9.1).
 
 const SRC = {
+  na341Oficial: { title: 'Philips Brasil: Airfryer Série 3000 7,2 L NA341/00 (página oficial)', url: 'https://www.philips.com.br/c-p/NA341_00/3000-series-airfryer-7.2l' },
+  na230Oficial: { title: 'Philips Brasil: Airfryer Série 2000 6,2 L NA230/00 (página oficial)', url: 'https://www.philips.com.br/c-p/NA230_00/2000-series-airfryer-2000-series-62l' },
+  britaniaOficial: { title: 'Britânia: Air Fryer BFR50 5,5 L (loja oficial)', url: 'https://www.britania.com.br/fritadeira-air-fryer-bfr50-127v-063801112/p' },
   na341Loja: {
     title: 'Fast Shop: ficha da Airfryer Philips Walita Série 3000 (NA341)',
     url: 'https://site.fastshop.com.br/fritadeira-airfryer-philips-walita-serie-3000-7-2l-digital-com-visor-1800w-wana34100pto_prd/p',
@@ -156,7 +159,7 @@ export const airFryers: EditorialPack = {
         { question: 'Ela é bivolt?', answer: 'Não. Existem versões de 127 V (1.800 W) e de 220 V (2.000 W); confira a voltagem antes de comprar.' },
         { question: 'O cesto pode ir à lava-louças?', answer: 'Sim, o cesto antiaderente removível pode ser lavado na lava-louças.' },
       ],
-      sources: [SRC.na341Loja, SRC.na341Review, SRC.na341Ruido, SRC.philipsReclameAqui],
+      sources: [SRC.na341Oficial, SRC.na341Loja, SRC.na341Review, SRC.na341Ruido, SRC.philipsReclameAqui],
     },
     {
       slug: NA230,
@@ -167,7 +170,7 @@ export const airFryers: EditorialPack = {
         temperatura_max: '200',
         timer_max: '60',
         controle: 'Digital',
-        funcoes_predefinidas: '8',
+        funcoes_predefinidas: '13',
         visor: 'sim',
         lava_loucas: 'sim',
         garantia: '24',
@@ -183,7 +186,7 @@ export const airFryers: EditorialPack = {
         },
         facilidade_uso_limpeza: {
           score: 8.5,
-          justification: 'Painel touch com 8 funções prontas, temperatura de 80 a 200 °C, visor com luz interna e peças removíveis que vão à lava-louças.',
+          justification: 'Painel touch com 13 funções prontas, temperatura de 80 a 200 °C, visor com luz interna e peças removíveis que vão à lava-louças.',
         },
         construcao_durabilidade: {
           score: 8,
@@ -199,8 +202,8 @@ export const airFryers: EditorialPack = {
         },
       },
       verdict: 'O melhor equilíbrio entre preço e recursos: painel digital, visor e cesto de 6,2 litros, com a garantia de 2 anos da Philips Walita.',
-      pros: ['Painel digital com 8 funções prontas', 'Visor com luz interna', 'Cesto de 6,2 L para até 6 pessoas', 'Peças vão à lava-louças', 'Garantia de 2 anos'],
-      cons: ['Menos funções e acabamento mais simples que a Série 3000', 'Não é bivolt: é preciso escolher 127 V ou 220 V'],
+      pros: ['Painel digital com 13 funções prontas', 'Visor com luz interna', 'Cesto de 6,2 L para até 6 pessoas', 'Peças vão à lava-louças', 'Garantia de 2 anos'],
+      cons: ['Acabamento mais simples e menos capacidade que a Série 3000', 'Não é bivolt: é preciso escolher 127 V ou 220 V'],
       recommendedFor: 'Famílias de 3 a 5 pessoas que querem uma air fryer digital, com visor e boa garantia, sem pagar o preço do modelo topo de linha.',
       avoidIf: 'Você cozinha para muita gente de uma vez ou quer o máximo de capacidade (veja a Série 3000 XL).',
       review: lexicalDoc([
@@ -210,7 +213,7 @@ export const airFryers: EditorialPack = {
         ),
         heading('h2', 'Uso no dia a dia'),
         paragraph(
-          'O painel touch tem 8 funções pré-definidas e o visor com luz interna permite acompanhar o preparo sem abrir a gaveta, recurso raro nessa faixa de preço. O desligamento é automático ao fim do tempo.',
+          'O painel touch tem 13 funções pré-definidas e o visor com luz interna permite acompanhar o preparo sem abrir a gaveta, recurso raro nessa faixa de preço. O desligamento é automático ao fim do tempo.',
         ),
         heading('h2', 'Limpeza'),
         paragraph('A grelha antiaderente e as demais peças removíveis vão à lava-louças.'),
@@ -221,9 +224,9 @@ export const airFryers: EditorialPack = {
       ]),
       faq: [
         { question: 'Para quantas pessoas ela serve?', answer: 'O fabricante indica para até 6 pessoas; na prática, rende bem para famílias de 3 a 5.' },
-        { question: 'Qual a diferença para a Série 3000 XL?', answer: 'A Série 3000 XL tem mais capacidade (7,2 L), mais funções (12) e potência maior; a Série 2000 XL custa menos.' },
+        { question: 'Qual a diferença para a Série 3000 XL?', answer: 'A Série 3000 XL tem mais capacidade (7,2 L) e potência maior; a Série 2000 XL custa menos.' },
       ],
-      sources: [SRC.na230Loja, SRC.na230Comparador, SRC.philipsReclameAqui],
+      sources: [SRC.na230Oficial, SRC.na230Loja, SRC.na230Comparador, SRC.philipsReclameAqui],
     },
     {
       slug: MONDIAL,
@@ -360,7 +363,7 @@ export const airFryers: EditorialPack = {
         { question: 'Qual a potência?', answer: '1.500 W, nas versões 127 V e 220 V.' },
         { question: 'Qual a garantia?', answer: '12 meses contra defeitos de fabricação, segundo a ficha do produto.' },
       ],
-      sources: [SRC.britaniaLoja, SRC.britaniaLoja2],
+      sources: [SRC.britaniaOficial, SRC.britaniaLoja, SRC.britaniaLoja2],
     },
   ],
   contents: [
@@ -413,7 +416,7 @@ export const airFryers: EditorialPack = {
         ),
         heading('h2', 'Facilidade de uso'),
         paragraph(
-          'A Philips tem painel touch com 8 funções prontas e visor com luz interna. A Mondial usa controles simples de temperatura e tempo, sem programas nem visor.',
+          'A Philips tem painel touch com 13 funções prontas e visor com luz interna. A Mondial usa controles simples de temperatura e tempo, sem programas nem visor.',
         ),
         heading('h2', 'Limpeza e durabilidade'),
         paragraph(

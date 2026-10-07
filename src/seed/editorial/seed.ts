@@ -42,8 +42,6 @@ async function findBySlug(payload: Payload, collection: 'products' | 'contents' 
 }
 
 async function createProduct(payload: Payload, pack: EditorialPack, product: PackProduct, subcategoryId: number, brandId: number) {
-  const perVariant = new Set(pack.specTemplate.filter((attr) => attr.perVariant).map((attr) => attr.key))
-  const productSpecs = Object.fromEntries(Object.entries(product.specs).filter(([key]) => !perVariant.has(key)))
   const created = await payload.create({
     collection: 'products',
     data: { name: product.name, slug: product.slug, brand: brandId, subcategory: subcategoryId, status: 'rascunho' },
@@ -63,23 +61,7 @@ async function createProduct(payload: Payload, pack: EditorialPack, product: Pac
     else await payload.create({ collection: 'variants', data: { ...data, product: created.id } })
   }
 
-  await payload.update({
-    collection: 'products',
-    id: created.id,
-    data: {
-      specs: rows(productSpecs),
-      scores: Object.entries(product.scores).map(([key, { score, justification }]) => ({ key, score, justification })),
-      verdict: product.verdict,
-      pros: product.pros.map((text) => ({ text })),
-      cons: product.cons.map((text) => ({ text })),
-      recommendedFor: product.recommendedFor,
-      avoidIf: product.avoidIf,
-      fullReview: product.review,
-      faq: product.faq,
-      sources: product.sources,
-      reviewedAt: new Date().toISOString(),
-    },
-  })
+  await payload.update({ collection: 'products', id: created.id, data: { ...productData(pack, product), reviewedAt: new Date().toISOString() } })
   return created.id
 }
 
@@ -156,4 +138,93 @@ export async function seedEditorialPack(payload: Payload, pack: EditorialPack): 
   }
 
   return { created, skipped }
+}
+
+// Margem entre a criação e a última gravação feita pelo próprio carregamento (variantes, notas)
+const UNTOUCHED_MS = 2 * 60 * 1000
+
+const editedAfterSeeding = (doc: { createdAt: string; updatedAt: string }) =>
+  new Date(doc.updatedAt).getTime() - new Date(doc.createdAt).getTime() > UNTOUCHED_MS
+
+function productData(pack: EditorialPack, product: PackProduct) {
+  const perVariant = new Set(pack.specTemplate.filter((attr) => attr.perVariant).map((attr) => attr.key))
+  return {
+    name: product.name,
+    specs: rows(Object.fromEntries(Object.entries(product.specs).filter(([key]) => !perVariant.has(key)))),
+    scores: Object.entries(product.scores).map(([key, { score, justification }]) => ({ key, score, justification })),
+    verdict: product.verdict,
+    pros: product.pros.map((text) => ({ text })),
+    cons: product.cons.map((text) => ({ text })),
+    recommendedFor: product.recommendedFor,
+    avoidIf: product.avoidIf,
+    fullReview: product.review,
+    faq: product.faq,
+    sources: product.sources,
+  }
+}
+
+// Corrige documentos já carregados com os dados atuais do pacote, mas só os que ninguém editou depois
+// do carregamento (os editados ficam como estão e aparecem no relatório). Status nunca é alterado.
+export async function refreshFromPack(
+  payload: Payload,
+  pack: EditorialPack,
+  options: { products?: string[]; contents?: string[]; renamedProducts?: Record<string, string> },
+): Promise<{ updated: string[]; skipped: string[] }> {
+  const updated: string[] = []
+  const skipped: string[] = []
+
+  // A troca de slug grava o documento: quem foi renomeado aqui já foi conferido antes da troca
+  const renamedIds = new Set<number>()
+  for (const [oldSlug, newSlug] of Object.entries(options.renamedProducts ?? {})) {
+    const { docs } = await payload.find({ collection: 'products', where: { slug: { equals: oldSlug } }, limit: 1, depth: 0 })
+    if (!docs[0]) continue
+    if (editedAfterSeeding(docs[0])) {
+      skipped.push(`produto:${oldSlug} (editado depois do carregamento)`)
+      continue
+    }
+    await payload.update({ collection: 'products', id: docs[0].id, data: { slug: newSlug } })
+    renamedIds.add(docs[0].id)
+  }
+
+  const products: Ids = new Map()
+  for (const product of pack.products) {
+    const found = await findBySlug(payload, 'products', product.slug)
+    if (found) products.set(product.slug, found.id)
+  }
+
+  for (const slug of options.products ?? []) {
+    const product = pack.products.find((item) => item.slug === slug)
+    const id = products.get(slug)
+    if (!product || id === undefined) continue
+    const doc = await payload.findByID({ collection: 'products', id, depth: 0 })
+    if (!renamedIds.has(id) && editedAfterSeeding(doc)) {
+      skipped.push(`produto:${slug} (editado depois do carregamento)`)
+      continue
+    }
+    const { docs: variants } = await payload.find({ collection: 'variants', where: { product: { equals: id } }, sort: 'createdAt', depth: 0, limit: 100 })
+    for (const [index, variant] of product.variants.entries()) {
+      const target = variants.find((item) => item.label === variant.label) ?? variants[index]
+      if (target) {
+        await payload.update({ collection: 'variants', id: target.id, data: { label: variant.label, voltage: variant.voltage, modelCode: variant.modelCode, specs: rows(variant.specs) } })
+      }
+    }
+    await payload.update({ collection: 'products', id, data: productData(pack, product) })
+    updated.push(`produto:${slug}`)
+  }
+
+  const { docs: subs } = await payload.find({ collection: 'categories', where: { slug: { equals: pack.subcategorySlug } }, limit: 1, depth: 0 })
+  for (const slug of options.contents ?? []) {
+    const content = pack.contents.find((item) => (item.slug ?? comparisonSlug(item.comparedProductSlugs ?? [])) === slug)
+    const { docs } = await payload.find({ collection: 'contents', where: { slug: { equals: slug } }, limit: 1, depth: 0 })
+    if (!content || !docs[0] || !subs[0]) continue
+    if (editedAfterSeeding(docs[0])) {
+      skipped.push(`conteudo:${slug} (editado depois do carregamento)`)
+      continue
+    }
+    const { status: _status, slug: _slug, ...data } = contentData(content, products, subs[0].id)
+    await payload.update({ collection: 'contents', id: docs[0].id, data: data as never })
+    updated.push(`conteudo:${slug}`)
+  }
+
+  return { updated, skipped }
 }

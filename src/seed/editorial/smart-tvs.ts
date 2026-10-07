@@ -5,6 +5,12 @@ import type { EditorialPack, Source } from './types'
 // publicados. Revisão humana obrigatória antes de publicar (spec §9.1).
 
 const SRC = {
+  c5Oficial: { title: 'LG Brasil: Smart TV LG OLED evo AI C5 55" (página oficial)', url: 'https://www.lg.com/br/tvs-e-soundbars/oled-evo/oled55c5psa/' },
+  qn85fOficial: {
+    title: 'Samsung Brasil: Vision AI TV 55" Neo QLED 4K QN85F (página oficial)',
+    url: 'https://www.samsung.com/br/tvs/qled-tv/q85f-55-inch-neo-qled-4k-mini-led-smart-tv-qn55qn85fagxzd/',
+  },
+  c6kOficial: { title: 'TCL Brasil: TV C6K QD-Mini LED (página oficial)', url: 'https://www.tcl.com/br/pt/tvs/c6k' },
   c5Ficha: { title: 'Oficina da Net: ficha técnica da LG OLED C5 55"', url: 'https://www.oficinadanet.com.br/smarttvs/comparacao-lg-oled-c5-55' },
   qn85fFicha: { title: 'Buscapé: ficha e preços da Samsung Neo QLED 55" QN85F', url: 'https://www.buscape.com.br/tv/smart-tv-neo-qled-55-samsung-4k-55qn85fagxzd' },
   c6kOferta: {
@@ -12,13 +18,9 @@ const SRC = {
     url: 'https://tecnoblog.net/achados/tv-tcl-c6k-com-mini-led-de-55-tem-melhor-preco-em-meses-em-oferta-na-amazon/',
   },
   c6kGuia: { title: 'Game Over Drive: TCL C8K, C7L ou C6K? A melhor TV para cada bolso em 2026', url: 'https://gameoverdrive.com.br/melhor-tv-tcl-2026/' },
-  u8000fFicha: {
-    title: 'Samsung: ficha técnica da Crystal UHD U8000F',
-    url: 'https://www.samsung.com/africa_pt/tvs/uhd-4k-tv/u8000f-43-inch-crystal-uhd-4k-smart-tv-ua43u8000fuxke/',
-  },
-  u8000fSpecs: {
-    title: 'Micro Center: especificações da Samsung U8000F 55"',
-    url: 'https://www.microcenter.com/quickView/693235/samsung-u8000f-55-class-(546-diag)-4k-ultra-hd-smart-led-tv',
+  u8100fFicha: {
+    title: 'Samsung Brasil: Smart TV 55" Crystal UHD 4K U8100F (ficha oficial)',
+    url: 'https://www.samsung.com/br/tvs/uhd-4k-tv/u8000f-55-inch-crystal-uhd-4k-smart-tv-un55u8100fgxzd/',
   },
   garantia: {
     title: 'Promotop: garantia de fábrica de TVs no Brasil (Samsung, LG e TCL: 12 meses)',
@@ -34,7 +36,7 @@ const SRC = {
 const C5 = 'lg-oled-evo-c5'
 const QN85F = 'samsung-neo-qled-qn85f'
 const C6K = 'tcl-qd-mini-led-c6k'
-const U8000F = 'samsung-crystal-uhd-u8000f'
+const U8100F = 'samsung-crystal-uhd-u8100f'
 
 export const smartTvs: EditorialPack = {
   subcategorySlug: 'smart-tvs',
@@ -129,7 +131,7 @@ export const smartTvs: EditorialPack = {
         { question: 'OLED queima a tela?', answer: 'O risco existe com imagens fixas por muitas horas, mas é baixo no uso normal. A TV tem recursos automáticos para evitar marcas.' },
         { question: 'Quais tamanhos existem?', answer: '42, 48, 55, 65, 77 e 83 polegadas. Nesta análise usamos a de 55" como referência.' },
       ],
-      sources: [SRC.c5Ficha, SRC.techtudo, SRC.garantia],
+      sources: [SRC.c5Oficial, SRC.c5Ficha, SRC.techtudo, SRC.garantia],
     },
     {
       slug: QN85F,
@@ -185,7 +187,7 @@ export const smartTvs: EditorialPack = {
         ),
       ]),
       faq: [{ question: 'Neo QLED é a mesma coisa que Mini LED?', answer: 'Sim. Neo QLED é o nome comercial da Samsung para TVs QLED com iluminação Mini LED.' }],
-      sources: [SRC.qn85fFicha, SRC.buscapeRanking, SRC.garantia],
+      sources: [SRC.qn85fOficial, SRC.qn85fFicha, SRC.buscapeRanking, SRC.garantia],
     },
     {
       slug: C6K,
@@ -244,11 +246,11 @@ export const smartTvs: EditorialPack = {
         paragraph('Para a maioria das pessoas, sim: é a TV que entrega mais por real investido nesta lista.'),
       ]),
       faq: [{ question: 'O que é QD-Mini LED?', answer: 'É a combinação de pontos quânticos (QD), que melhoram as cores, com iluminação Mini LED, que melhora brilho e contraste.' }],
-      sources: [SRC.c6kOferta, SRC.c6kGuia, SRC.techtudo, SRC.garantia],
+      sources: [SRC.c6kOficial, SRC.c6kOferta, SRC.c6kGuia, SRC.techtudo, SRC.garantia],
     },
     {
-      slug: U8000F,
-      name: 'Samsung Crystal UHD U8000F',
+      slug: U8100F,
+      name: 'Samsung Crystal UHD U8100F',
       brandSlug: 'samsung',
       specs: {
         painel: 'LED',
@@ -261,8 +263,8 @@ export const smartTvs: EditorialPack = {
         garantia: '12',
       },
       variants: [
-        { label: '55"', modelCode: 'UN55U8000F', isReference: true, specs: { tamanho: '55', consumo: '120' } },
-        { label: '65"', modelCode: 'UN65U8000F', specs: { tamanho: '65' } },
+        { label: '55"', modelCode: 'UN55U8100FGXZD', isReference: true, specs: { tamanho: '55' } },
+        { label: '65"', modelCode: 'UN65U8100FGXZD', specs: { tamanho: '65' } },
       ],
       scores: {
         imagem: { score: 6.5, justification: 'LED 4K com HDR10+, correto para o dia a dia, mas com contraste e brilho bem abaixo das Mini LED e da OLED. 60 Hz.' },
@@ -279,7 +281,7 @@ export const smartTvs: EditorialPack = {
       review: lexicalDoc([
         heading('h2', 'Imagem'),
         paragraph(
-          'A U8000F é uma TV LED 4K com HDR10+. Para streaming, TV aberta e esportes, a imagem é correta, mas falta brilho e contraste para o HDR brilhar como nas Mini LED e na OLED.',
+          'A U8100F é uma TV LED 4K com HDR10+. Para streaming, TV aberta e esportes, a imagem é correta, mas falta brilho e contraste para o HDR brilhar como nas Mini LED e na OLED.',
         ),
         heading('h2', 'Recursos'),
         paragraph('O sistema é o mesmo Tizen das Samsung mais caras, com todos os aplicativos populares e assistentes de voz. A taxa é de 60 Hz, sem os 120 Hz dos consoles atuais.'),
@@ -287,7 +289,7 @@ export const smartTvs: EditorialPack = {
         paragraph('Se o orçamento é curto e o uso é streaming e TV, sim. Se der para esticar, a TCL C6K é um salto grande de qualidade.'),
       ]),
       faq: [{ question: 'Serve para PlayStation 5?', answer: 'Funciona, mas em 60 Hz. Para aproveitar 120 Hz, escolha um modelo com HDMI 2.1, como a TCL C6K.' }],
-      sources: [SRC.u8000fFicha, SRC.u8000fSpecs, SRC.garantia],
+      sources: [SRC.u8100fFicha, SRC.garantia],
     },
   ],
   contents: [
@@ -296,14 +298,14 @@ export const smartTvs: EditorialPack = {
       slug: 'melhores-smart-tvs',
       title: 'As melhores smart TVs para comprar',
       summary:
-        'A LG OLED C5 tem a melhor imagem; a TCL C6K é o melhor custo-benefício; a Samsung QN85F é a Mini LED para salas claras; e a Samsung U8000F é a opção de entrada.',
+        'A LG OLED C5 tem a melhor imagem; a TCL C6K é o melhor custo-benefício; a Samsung QN85F é a Mini LED para salas claras; e a Samsung U8100F é a opção de entrada.',
       metaDescription: 'As melhores smart TVs do Brasil comparadas por imagem, recursos, som, suporte e preço: OLED, Mini LED e LED, com notas por critério.',
       modelsAnalyzed: 4,
       picks: [
         { productSlug: C5, profileLabel: 'Melhor imagem', position: 1, why: 'OLED com preto perfeito, Dolby Vision e 4 portas HDMI 2.1. A melhor para filmes e games.' },
         { productSlug: C6K, profileLabel: 'Melhor custo-benefício', position: 2, why: 'Mini LED com Dolby Vision, 144 Hz e som com subwoofer por preço de TV intermediária.' },
         { productSlug: QN85F, profileLabel: 'Para salas claras', position: 3, why: 'Mini LED de brilho alto, com o ecossistema e a assistência da Samsung.' },
-        { productSlug: U8000F, profileLabel: 'Mais barata', position: 4, why: 'Tela 4K grande com sistema completo por pouco, para streaming e TV aberta.' },
+        { productSlug: U8100F, profileLabel: 'Mais barata', position: 4, why: 'Tela 4K grande com sistema completo por pouco, para streaming e TV aberta.' },
       ],
       body: lexicalDoc([
         heading('h2', 'Como escolher'),
@@ -371,7 +373,7 @@ export const smartTvs: EditorialPack = {
         heading('h2', 'Som'),
         paragraph('TVs finas têm pouco espaço para alto-falantes. Se você gosta de filmes, reserve parte do orçamento para uma soundbar.'),
         heading('h2', 'Comparação rápida dos modelos que analisamos'),
-        block({ blockType: 'comparisonTable', productSlugs: [C5, QN85F, C6K, U8000F], attributes: [] }),
+        block({ blockType: 'comparisonTable', productSlugs: [C5, QN85F, C6K, U8100F], attributes: [] }),
         block({
           blockType: 'faq',
           items: [

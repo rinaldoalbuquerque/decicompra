@@ -6,7 +6,7 @@ import { smartTvs } from './smart-tvs'
 import type { EditorialPack } from './types'
 
 export type { EditorialPack } from './types'
-export { seedEditorialPack } from './seed'
+export { refreshFromPack, seedEditorialPack } from './seed'
 
 // Pacotes de conteúdo de lançamento (Fase 4), por subcategoria
 export const EDITORIAL_PACKS: Record<string, EditorialPack> = {

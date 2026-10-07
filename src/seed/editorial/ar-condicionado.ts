@@ -5,6 +5,9 @@ import type { EditorialPack, Source } from './types'
 // comparadores e conteúdo técnico sobre IDRS/Procel. Revisão humana obrigatória antes de publicar.
 
 const SRC = {
+  lgOficial: { title: 'LG Brasil: AI Dual Inverter Compact 12.000 BTU S3-Q12JAQAL (página oficial)', url: 'https://www.lg.com/br/ar-condicionado-residencial/dual-inverter-split/s3-q12jaqal-1/' },
+  samsungOficial: { title: 'Samsung Brasil: WindFree Connect 12.000 BTUs AR12BVFAAWKNAZ (página oficial)', url: 'https://www.samsung.com/br/support/model/AR12BVFAAWKNAZ/' },
+  elginOficial: { title: 'Elgin: Eco Inverter II 12.000 BTUs frio Wi-Fi (página oficial)', url: 'https://www.elgin.com.br/ar-condicionado-split-high-wall-eco-inverter-ii-12000-btus-frio-wifi-220v/p' },
   lgAnalise: { title: 'Buscapé: ar-condicionado LG Dual Inverter Compact +AI é bom?', url: 'https://www.buscape.com.br/ar-condicionado/conteudo/ar-condicionado-lg-dual-inverter-compact-analise' },
   lgLoja: {
     title: 'Fast Shop: LG Dual Inverter Compact +AI 12.000 BTUs S3-Q12JAQAL',
@@ -85,7 +88,7 @@ export const arCondicionado: EditorialPack = {
         { question: 'Para qual tamanho de ambiente?', answer: 'Cerca de 20 m², em condições normais. Ambientes com muito sol ou muitas pessoas pedem mais BTUs.' },
         { question: 'Ele tem Wi-Fi?', answer: 'As fontes divergem conforme a versão. Confira na ficha da loja se o modelo tem conexão com o app LG ThinQ.' },
       ],
-      sources: [SRC.lgAnalise, SRC.lgLoja, SRC.ranking12k],
+      sources: [SRC.lgOficial, SRC.lgAnalise, SRC.lgLoja, SRC.ranking12k],
     },
     {
       slug: MIDEA,
@@ -147,7 +150,7 @@ export const arCondicionado: EditorialPack = {
         paragraph('Para quem se incomoda com o vento direto, sim: o conforto é o diferencial. Em eficiência e preço, os modelos com gás R-32 levam vantagem.'),
       ]),
       faq: [{ question: 'WindFree gela o ambiente?', answer: 'Sim. Ele resfria normalmente e, ao atingir a temperatura, troca o jato de ar pela saída suave por microfuros para manter o ambiente.' }],
-      sources: [SRC.samsungFicha, SRC.rankingSplit],
+      sources: [SRC.samsungOficial, SRC.samsungFicha, SRC.rankingSplit],
     },
     {
       slug: ELGIN,
@@ -159,12 +162,12 @@ export const arCondicionado: EditorialPack = {
         eficiencia_energetica: { score: 8, justification: 'Classe A com Selo Procel, gás R-32 e consumo de cerca de 411 kWh por ano, um pouco acima do Midea AI XtremeSave.' },
         desempenho_ruido: { score: 7, justification: 'Inverter com 3 velocidades. O ruído em dB não aparece nas fichas consultadas.' },
         recursos: { score: 8, justification: 'Wi-Fi, compatibilidade com Alexa e Google Home e filtro ionizador contra vírus, bactérias e ácaros.' },
-        confiabilidade_suporte_instalacao: { score: 8, justification: 'Garantia de 10 anos no compressor (12 meses no restante do aparelho) e assistência da Elgin em todo o país.' },
-        custo_beneficio: { score: 9, justification: 'Wi-Fi, R-32 e 10 anos de garantia no compressor por um dos menores preços entre os inverter de 12.000 BTUs.' },
+        confiabilidade_suporte_instalacao: { score: 8, justification: 'Garantia de 3 anos no aparelho e 10 anos no compressor, segundo o site da Elgin, e assistência da Elgin em todo o país.' },
+        custo_beneficio: { score: 9, justification: 'Wi-Fi, R-32, 3 anos de garantia e 10 no compressor por um dos menores preços entre os inverter de 12.000 BTUs.' },
       },
       verdict: 'Bom e barato: inverter com Wi-Fi, gás R-32 e 10 anos de garantia no compressor por um dos menores preços da categoria.',
-      pros: ['10 anos de garantia no compressor', 'Wi-Fi com Alexa e Google Home', 'Gás R-32', 'Filtro ionizador', 'Preço baixo'],
-      cons: ['Consumo um pouco maior que o do Midea AI XtremeSave', 'Ruído em dB não informado', 'Garantia de 12 meses nas demais peças'],
+      pros: ['Garantia de 3 anos e de 10 anos no compressor', 'Wi-Fi com Alexa e Google Home', 'Gás R-32', 'Filtro ionizador', 'Preço baixo'],
+      cons: ['Consumo um pouco maior que o do Midea AI XtremeSave', 'Ruído em dB não informado'],
       recommendedFor: 'Quem quer um inverter com Wi-Fi gastando pouco e valoriza garantia longa no compressor.',
       avoidIf: 'O silêncio absoluto é prioridade e você quer números de ruído informados.',
       review: lexicalDoc([
@@ -172,13 +175,13 @@ export const arCondicionado: EditorialPack = {
         paragraph('Classe A com Selo Procel, gás R-32 e consumo de cerca de 411 kWh por ano, bom para um aparelho dessa faixa de preço.'),
         heading('h2', 'Recursos e garantia'),
         paragraph(
-          'Tem Wi-Fi, comandos por Alexa e Google Home e filtro ionizador. O grande destaque é a garantia de 10 anos no compressor, a peça mais cara do aparelho; as demais peças têm 12 meses.',
+          'Tem Wi-Fi, comandos por Alexa e Google Home e filtro ionizador. O grande destaque é a garantia: 3 anos no aparelho e 10 anos no compressor, a peça mais cara, segundo o site da Elgin.',
         ),
         heading('h2', 'Vale a pena?'),
         paragraph('Para quem quer gastar pouco sem abrir mão de inverter e Wi-Fi, sim.'),
       ]),
-      faq: [{ question: 'A garantia de 10 anos vale para tudo?', answer: 'Não: os 10 anos são do compressor. As demais peças têm 12 meses. A instalação deve ser feita por credenciado para manter a garantia.' }],
-      sources: [SRC.elginFicha, SRC.elginLoja, SRC.ranking12k],
+      faq: [{ question: 'A garantia de 10 anos vale para tudo?', answer: 'Não: são 3 anos no aparelho e 10 anos no compressor. A instalação deve ser feita por credenciado para manter a garantia.' }],
+      sources: [SRC.elginOficial, SRC.elginFicha, SRC.elginLoja, SRC.ranking12k],
     },
   ],
   contents: [
