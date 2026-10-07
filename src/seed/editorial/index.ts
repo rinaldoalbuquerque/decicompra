@@ -1,4 +1,5 @@
 import { airFryers } from './air-fryers'
+import { notebooks } from './notebooks'
 import { smartTvs } from './smart-tvs'
 import type { EditorialPack } from './types'
 
@@ -9,4 +10,5 @@ export { seedEditorialPack } from './seed'
 export const EDITORIAL_PACKS: Record<string, EditorialPack> = {
   'air-fryers': airFryers,
   'smart-tvs': smartTvs,
+  notebooks,
 }
